@@ -34,4 +34,46 @@ Each goal starts with the smallest possible implementation.
 These may be explored later, but only after the fundamentals are solid.
 
 ## Initial Architecture
+Job Sites
+↓
+Scraper (Python)
+↓
+Storage (JSON / SQLite)
+↓
+Backend API
+↓
+Simple Frontend
+↓
+Resume Generator
+
+## Roadmap
+
+### Phase 1 — Foundation
+- [ ] Scrape job postings from one job site
+- [ ] Normalize and store job data
+- [ ] CLI or script-based workflow
+
+### Phase 2 — Visibility
+- [ ] Simple frontend to view job postings
+- [ ] Basic filtering and searching
+
+### Phase 3 — Resume Generation
+- [ ] Resume templates
+- [ ] Generate resumes using job descriptions + user profile
+- [ ] Export to PDF or DOCX
+
+### Phase 4 — Incremental Intelligence
+- [ ] Keyword matching
+- [ ] Simple heuristic-based scoring
+- [ ] Resume–job relevance indicators
+
+### Phase 5 — Nice-to-Haves
+- [ ] Dockerization
+- [ ] Multiple job boards
+- [ ] ML-based experiments (optional)
+
+## Why This Repo Exists
+
+This is a **learning-first project**, not a production product.
+
 
