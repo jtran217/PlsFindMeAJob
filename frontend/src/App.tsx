@@ -66,7 +66,7 @@ function App() {
   const selectedJob = filteredJobs.find((job) => job.id === selectedId) ?? filteredJobs[0]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0b1021] via-[#0b1228] to-[#0a0f20] text-slate-100">
+    <div className="min-h-screen bg-linear-to-br from-[#0b1021] via-[#0b1228] to-[#0a0f20] text-slate-100">
       <div className="mx-auto max-w-6xl px-6 py-10 lg:px-10 lg:py-12">
         <div className="mb-8 flex items-center justify-between">
           <div>
@@ -160,7 +160,7 @@ function App() {
                       <h2 className="mt-2 text-2xl font-semibold text-white">{selectedJob.title}</h2>
                       <p className="text-sm text-slate-400">{selectedJob.company}</p>
                     </div>
-                    <button className="flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 px-5 py-2 text-sm font-semibold text-white shadow-[0_15px_45px_-10px_rgba(79,70,229,0.5)] transition hover:shadow-[0_20px_55px_-12px_rgba(79,70,229,0.65)]">
+                    <button className="flex items-center gap-2 rounded-full bg-linear-to-r from-indigo-500 via-purple-500 to-fuchsia-500 px-5 py-2 text-sm font-semibold text-white shadow-[0_15px_45px_-10px_rgba(79,70,229,0.5)] transition hover:shadow-[0_20px_55px_-12px_rgba(79,70,229,0.65)]">
                       Generate Resume
                     </button>
                   </div>
