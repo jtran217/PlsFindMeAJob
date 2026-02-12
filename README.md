@@ -49,9 +49,9 @@ Resume Generator
 ## Roadmap
 
 ### Phase 1 — Foundation
-- [ ] Scrape job postings from one job site
-- [ ] Normalize and store job data
-- [ ] CLI or script-based workflow
+- [X] Scrape job postings from one job site
+- [X] Normalize and store job data
+- [X] CLI or script-based workflow
 
 ### Phase 2 — Visibility
 - [ ] Simple frontend to view job postings
