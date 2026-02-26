@@ -55,6 +55,8 @@ Resume Generator
 
 ### Phase 2 — Visibility
 - [ ] Simple frontend to view job postings
+  - [ ] Make simple fast api backend to talk to database.
+  - [ ] make frontend talk to backend.
 - [ ] Basic filtering and searching
 
 ### Phase 3 — Resume Generation
