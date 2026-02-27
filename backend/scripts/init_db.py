@@ -1,7 +1,7 @@
 from pathlib import Path
 import sqlite3
 
-DB_PATH = Path(__file__).resolve().parent.parent / "data" / "jobs.db"
+DB_PATH = Path(__file__).resolve().parent.parent / "app" / "jobs.db"
 DB_PATH.parent.mkdir(exist_ok=True)
 
 conn = sqlite3.connect(DB_PATH)

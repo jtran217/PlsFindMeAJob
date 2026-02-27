@@ -51,7 +51,7 @@ jobs.to_csv("jobs.csv", quoting=csv.QUOTE_NONNUMERIC,
 print(jobs.head())
 
 
-conn = sqlite3.connect('../data/jobs.db')
+conn = sqlite3.connect('../app/jobs.db')
 cursor = conn.cursor()
 
 for row in jobs.itertuples(index=False):
