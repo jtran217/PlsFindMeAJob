@@ -1,3 +1,4 @@
-venv
+.venv
 *.csv
 data/jobs.db
+__pycache__/
