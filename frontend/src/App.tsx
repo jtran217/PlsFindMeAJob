@@ -1,38 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { fakeJobs, type Job } from './data/fakeJobs'
 import {useJobs} from './hooks/useJobs.ts'
+import {formatDate} from './utils/formatDate.ts'
 
-type JobStatus = 'ready' | 'applied'
-type Tab = JobStatus | 'all'
-
-const statusById: Record<string, JobStatus> = {
-  '1': 'ready',
-  '2': 'ready',
-  '3': 'applied',
-  '4': 'applied',
-  '5': 'ready',
-  '6': 'applied',
-  '7': 'ready',
-  '8': 'applied',
-}
-
-interface JobWithStatus extends Job {
-  status: JobStatus
-}
-
-const jobsWithStatus: JobWithStatus[] = fakeJobs.map((job) => ({
-  ...job,
-  status: statusById[job.id] ?? 'ready',
-}))
-
-function formatDate(dateString: string) {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-GB', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
-}
+type Tab = 'ready' | 'applied' | 'all'
 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('ready')
@@ -41,16 +11,16 @@ function App() {
 
   const counts = useMemo(
     () => ({
-      ready: jobsWithStatus.filter((job) => job.status === 'ready').length,
-      applied: jobsWithStatus.filter((job) => job.status === 'applied').length,
-      all: jobsWithStatus.length,
+      ready: jobs.filter((job) => job.status === 'ready').length,
+      applied: jobs.filter((job) => job.status === 'applied').length,
+      all: jobs.length,
     }),
-    [],
+    [jobs],
   )
 
   const filteredJobs = useMemo(() => {
-    if (activeTab === 'all') return jobsWithStatus
-    return jobsWithStatus.filter((job) => job.status === activeTab)
+    if (activeTab === 'all') return jobs
+    return jobs.filter((job) => job.status === activeTab)
   }, [activeTab])
 
   useEffect(() => {

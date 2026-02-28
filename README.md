@@ -56,7 +56,10 @@ Resume Generator
 ### Phase 2 — Visibility
 - [ ] Simple frontend to view job postings
   - [X] Make simple fast api backend to talk to database.
-  - [ ] make frontend talk to backend.
+  - [X] make frontend talk to backend.
+  - [ ] Fix job description as it includes some markdown content. Probably use a markdown render to display this text.
+  - [ ] Some sort of pagination
+  - [ ] have the job description be a scrollable content.
 - [ ] Basic filtering and searching
 
 ### Phase 3 — Resume Generation

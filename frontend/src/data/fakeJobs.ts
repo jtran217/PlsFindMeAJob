@@ -14,6 +14,7 @@ export interface Job {
   company_url_direct: string;
   skills: string;
   experience_range: string;
+  status:string;
 }
 
 export const fakeJobs: Job[] = [
