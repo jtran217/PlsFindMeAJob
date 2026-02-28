@@ -23,7 +23,8 @@ CREATE TABLE "job_list" (
   "company_url" TEXT,
   "company_url_direct" TEXT,
   "skills" TEXT,
-  "experience_range" TEXT
+  "experience_range" TEXT,
+  "status" TEXT DEFAULT 'all'
 );
                """)
 

@@ -27,3 +27,4 @@ class Job(Base):
 
     skills = Column(Text)
     experience_range = Column(String)
+    status = Column(String)
