@@ -58,7 +58,8 @@ Resume Generator
   - [X] Make simple fast api backend to talk to database.
   - [X] make frontend talk to backend.
   - [X] Fix job description as it includes some markdown content. Probably use a markdown render to display this text.
-  - [ ] Some sort of pagination
+  - [X] Some sort of pagination
+  - [ ] Scrollable job card section
   - [ ] have the job description be a scrollable content.
 - [ ] Basic filtering and searching
 

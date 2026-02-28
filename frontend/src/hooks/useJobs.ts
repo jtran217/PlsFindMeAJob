@@ -1,30 +1,32 @@
-import {useState, useEffect} from "react";
+import {useState, useEffect} from 'react'
 
-export function useJobs() {
+export function useJobs(page = 1, limit = 10) {
   const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState([]);
-  const [error, setError] = useState(null);
-
+  const [loading, setLoading] = useState(false);
+  const [error,setError] = useState(null);
+  const [total,setTotal] = useState(0);
   useEffect(() => {
     async function fetchJobs() {
-      try {
-        const response = await fetch("http://localhost:8000/api/jobs");
-
-        if(!response.ok) {
-          throw new Error("Failed to fetch jobs")
-        }
-
-        const data = await response.json()
+      try{
+        setLoading(true);
+        const skip = (page - 1) * limit;
+        const response = await fetch(
+          `http://localhost:8000/api/jobs?skip=${skip}&limit=${limit}`
+        );
+        const {data, total} = await response.json();
         setJobs(data);
-
-      } catch(err) {
+        setTotal(total);
+        setLoading(false);
+      }
+      catch(err) {
         setError(err);
-      } finally {
+      }
+      finally{
         setLoading(false);
       }
     }
     fetchJobs();
-  },[])
+  }, [page, limit]);
 
-  return {jobs,loading,error};
+  return { jobs, loading,error,total};
 }

@@ -34,6 +34,11 @@ def root():
     return {"message": "PlsFindMeAJob API is running 🚀"}
 
 @app.get("/api/jobs")
-def get_jobs(db:Session = Depends(get_db)):
-    jobs = db.query(models.Job).all()
-    return jobs
+def get_jobs(skip:int = 0, limit:int = 15, db:Session = Depends(get_db)):
+    total = db.query(models.Job).count()
+    jobs = db.query(models.Job).offset(skip).limit(limit).all()
+
+    return {
+     "total": total,
+     "data": jobs
+    }
