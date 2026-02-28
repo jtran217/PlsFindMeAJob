@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { fakeJobs, type Job } from './data/fakeJobs'
+import {useJobs} from './hooks/useJobs.ts'
 
 type JobStatus = 'ready' | 'applied'
 type Tab = JobStatus | 'all'
@@ -25,7 +26,7 @@ const jobsWithStatus: JobWithStatus[] = fakeJobs.map((job) => ({
 }))
 
 function formatDate(dateString: string) {
-  const date = new Date(dateString)
+  const date = new Date(dateString);
   return date.toLocaleDateString('en-GB', {
     month: 'short',
     day: 'numeric',
@@ -36,6 +37,7 @@ function formatDate(dateString: string) {
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('ready')
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const {jobs,loading,error} = useJobs();
 
   const counts = useMemo(
     () => ({
