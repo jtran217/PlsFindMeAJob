@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import {useJobs} from './hooks/useJobs.ts'
 import {formatDate} from './utils/formatDate.ts'
+import ReactMarkdown from 'react-markdown'
+import rehypeSanitize from "rehype-sanitize";
 
 type Tab = 'ready' | 'applied' | 'all'
+
 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('ready')
@@ -110,7 +113,6 @@ function App() {
                         </span>
                       </div>
                       <p className="text-base font-semibold text-white">{job.title}</p>
-                      <p className="line-clamp-2 text-sm text-slate-400">{job.description}</p>
                       <div className="flex w-full items-center justify-between text-xs text-slate-500">
                         <span>{job.experience_range || 'N/A'}</span>
                         <span>{formatDate(job.date_posted)}</span>
@@ -142,11 +144,11 @@ function App() {
                     <span className="rounded-lg border border-slate-700 bg-white/5 px-3 py-1">{selectedJob.job_type}</span>
                     <span className="rounded-lg border border-slate-700 bg-white/5 px-3 py-1">{selectedJob.skills}</span>
                   </div>
-
                   <div className="rounded-xl border border-slate-800/70 bg-[#0c1325]/80 p-4 text-sm leading-relaxed text-slate-200 shadow-inner shadow-indigo-950/30">
-                    {selectedJob.description}
+                    <ReactMarkdown rehypePlugins={[rehypeSanitize]}>
+                      {selectedJob.description}
+                    </ReactMarkdown>
                   </div>
-
                   <div className="flex flex-wrap gap-4 text-sm text-slate-400">
                     <a
                       href={selectedJob.job_url_direct}
