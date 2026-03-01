@@ -54,13 +54,13 @@ Resume Generator
 - [X] CLI or script-based workflow
 
 ### Phase 2 — Visibility
-- [ ] Simple frontend to view job postings
+- [X] Simple frontend to view job postings
   - [X] Make simple fast api backend to talk to database.
   - [X] make frontend talk to backend.
   - [X] Fix job description as it includes some markdown content. Probably use a markdown render to display this text.
   - [X] Some sort of pagination
-  - [ ] Scrollable job card section
-  - [ ] have the job description be a scrollable content.
+  - [X] Scrollable job card section
+  - [X] have the job description be a scrollable content.
 - [ ] Basic filtering and searching
 
 ### Phase 3 — Resume Generation

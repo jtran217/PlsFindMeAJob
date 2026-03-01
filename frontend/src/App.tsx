@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState,useRef } from 'react'
 import {useJobs} from './hooks/useJobs.ts'
 import {formatDate} from './utils/formatDate.ts'
 import ReactMarkdown from 'react-markdown'
@@ -13,6 +13,7 @@ function App() {
   const [page,setPage] = useState(1);
   const {jobs,loading,error,total} = useJobs(page,10);
   const totalPages = Math.ceil(total / 10);
+  const listRef = useRef<HTMLDivElement | null>(null)
 
   const counts = useMemo(
     () => ({
@@ -40,6 +41,14 @@ function App() {
     }
   }, [filteredJobs, selectedId])
 
+  useEffect(() => {
+    window.scrollTo({
+      top:0,
+      behavior:'smooth'
+    });
+    listRef.current?.scrollTo({ top: 0 })
+  }, [page,activeTab])
+
   const selectedJob = filteredJobs.find((job) => job.id === selectedId) ?? filteredJobs[0]
 
   return (
@@ -51,7 +60,7 @@ function App() {
             <h1 className="mt-2 text-3xl font-semibold text-white">Job Applications</h1>
           </div>
           <div className="rounded-full border border-slate-800 bg-white/5 px-4 py-2 text-sm text-slate-300 shadow-sm shadow-indigo-950/40">
-            {counts.all} total roles
+            {total} total roles
           </div>
         </div>
 
@@ -59,7 +68,7 @@ function App() {
           {[
             { key: 'ready', label: 'Ready', count: counts.ready },
             { key: 'applied', label: 'Applied', count: counts.applied },
-            { key: 'all', label: 'All Jobs', count: counts.all },
+            { key: 'all', label: 'All Jobs', count: total },
           ].map((tab) => {
             const isActive = activeTab === tab.key
             return (
@@ -85,67 +94,69 @@ function App() {
           })}
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-12">
-          <section className="lg:col-span-5">
-            <div className="overflow-hidden rounded-2xl border border-slate-800/80 bg-white/5 shadow-[0_30px_80px_-60px_rgba(0,0,0,0.65)]">
+        <div className="grid h-screen gap-6 lg:grid-cols-12">
+          <section className="lg:col-span-5 h-full min-h-0">
+            <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-800/80 bg-white/5 shadow-[0_30px_80px_-60px_rgba(0,0,0,0.65)]">
               <div className="border-b border-slate-800/70 bg-white/5 px-5 py-4">
                 <p className="text-sm text-slate-400">Job list</p>
                 <p className="text-base font-semibold text-white">{filteredJobs.length} matches</p>
               </div>
-              <div className="divide-y divide-slate-800/70">
+                <div ref={listRef} className="h-full min-h-0 overflow-y-auto divide-y divide-slate-800/70">
                 {filteredJobs.map((job) => {
                   const isSelected = job.id === selectedJob?.id
                   return (
                     <button
                       key={job.id}
-                      onClick={() => setSelectedId(job.id)}
-                      className={`flex w-full flex-col items-start gap-2 px-5 py-4 text-left transition ${
-                        isSelected
-                          ? 'bg-indigo-500/10 shadow-inner shadow-indigo-900/60'
-                          : 'hover:bg-white/10'
-                      }`}
-                    >
-                      <div className="flex w-full items-center justify-between gap-3">
-                        <div className="flex flex-col">
-                          <p className="text-sm uppercase tracking-[0.2em] text-slate-500">{job.site}</p>
-                          <p className="mt-1 text-sm text-slate-400">{job.company}</p>
+                        onClick={() => setSelectedId(job.id)}
+                        className={`flex w-full flex-col items-start gap-2 px-5 py-4 text-left transition ${
+                          isSelected
+                            ? 'bg-indigo-500/10 shadow-inner shadow-indigo-900/60'
+                            : 'hover:bg-white/10'
+                        }`}
+                      >
+                        <div className="flex w-full items-center justify-between gap-3">
+                          <div className="flex flex-col">
+                            <p className="text-sm uppercase tracking-[0.2em] text-slate-500">{job.site}</p>
+                            <p className="mt-1 text-sm text-slate-400">{job.company}</p>
+                          </div>
+                          <span className="rounded-full border border-slate-700 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200">
+                            {job.is_remote ? 'Remote' : job.location}
+                          </span>
                         </div>
-                        <span className="rounded-full border border-slate-700 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200">
-                          {job.is_remote ? 'Remote' : job.location}
-                        </span>
-                      </div>
-                      <p className="text-base font-semibold text-white">{job.title}</p>
-                      <div className="flex w-full items-center justify-between text-xs text-slate-500">
-                        <span>{job.experience_range || 'N/A'}</span>
-                        <span>{formatDate(job.date_posted)}</span>
-                      </div>
-                    </button>
-                  )
+                        <p className="text-base font-semibold text-white">{job.title}</p>
+                        <div className="flex w-full items-center justify-between text-xs text-slate-500">
+                          <span>{job.experience_range || 'N/A'}</span>
+                          <span>{formatDate(job.date_posted)}</span>
+                        </div>
+                      </button>
+                    )
                 })}
-              </div>
-              <div className="mt-4 flex justify-center">
-                <button
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => Math.max(p - 1, 1))}
-                  className="px-4 py-2 border rounded mr-2"
-                >
-                  Prev
-                </button>
+                </div>
 
-                <span className="px-4 py-2">Page {page} / {totalPages}</span>
+            </div>
+            <div className="py-4 flex justify-center">
+              <button
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                className="px-4 py-2 border rounded mr-2"
+              >
+                Prev
+              </button>
 
-                <button
-                  disabled={page >= totalPages}
-                  onClick={() => setPage((p) => p + 1)}
-                  className="px-4 py-2 border rounded ml-2"
-                >
-                  Next
-                </button>
-              </div>
+              <span className="px-4 py-2">Page {page} / {totalPages}</span>
+
+              <button
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => p + 1)}
+                className="px-4 py-2 border rounded ml-2"
+              >
+                Next
+              </button>
             </div>
           </section>
 
-          <section className="lg:col-span-7">
+
+          <section className="lg:col-span-7 h-full min-h-0">
             <div className="flex h-full flex-col gap-4 rounded-2xl border border-slate-800/80 bg-white/5 p-6 shadow-[0_30px_80px_-60px_rgba(0,0,0,0.65)]">
               {selectedJob ? (
                 <>
@@ -165,7 +176,7 @@ function App() {
                     <span className="rounded-lg border border-slate-700 bg-white/5 px-3 py-1">{selectedJob.job_type}</span>
                     <span className="rounded-lg border border-slate-700 bg-white/5 px-3 py-1">{selectedJob.skills}</span>
                   </div>
-                  <div className="rounded-xl border border-slate-800/70 bg-[#0c1325]/80 p-4 text-sm leading-relaxed text-slate-200 shadow-inner shadow-indigo-950/30">
+                  <div className="rounded-xl overflow-y-auto border border-slate-800/70 bg-[#0c1325]/80 p-4 text-sm leading-relaxed text-slate-200 shadow-inner shadow-indigo-950/30">
                     <ReactMarkdown rehypePlugins={[rehypeSanitize]}>
                       {selectedJob.description}
                     </ReactMarkdown>
