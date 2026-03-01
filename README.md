@@ -65,6 +65,8 @@ Resume Generator
 
 ### Phase 3 — AI-Assisted Resume Generation
  - [] Define canonical resume JSON schema
+  - [] Display Profile page where user can edit 
+  - [] Save button to save info to profile.JSON
  - [] Send (profile + job description) to Claude
  - [] Receive structured JSON resume
  - [] Inject JSON into Reactive Resume
