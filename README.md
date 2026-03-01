@@ -62,12 +62,12 @@ Resume Generator
   - [X] Scrollable job card section
   - [X] have the job description be a scrollable content.
 - [ ] Basic filtering and searching
-
-### Phase 3 — Resume Generation
-- [ ] Resume templates
-- [ ] Generate resumes using job descriptions + user profile
-- [ ] Export to PDF or DOCX
-
+Phase 3 — AI-Assisted Resume Generation
+ - [] Define canonical resume JSON schema
+ - [] Send (profile + job description) to Claude
+ - [] Receive structured JSON resume
+ - [] Inject JSON into Reactive Resume
+ - [] Export to PDF
 ### Phase 4 — Incremental Intelligence
 - [ ] Keyword matching
 - [ ] Simple heuristic-based scoring
