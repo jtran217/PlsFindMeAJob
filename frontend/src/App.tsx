@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState,useRef } from 'react'
+import React, { useEffect, useMemo, useState, useRef } from 'react'
+import Profile from './components/Profile'
 import {useJobs} from './hooks/useJobs.ts'
 import {formatDate} from './utils/formatDate.ts'
 import ReactMarkdown from 'react-markdown'
@@ -59,8 +60,18 @@ function App() {
             <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Dashboard</p>
             <h1 className="mt-2 text-3xl font-semibold text-white">Job Applications</h1>
           </div>
-          <div className="rounded-full border border-slate-800 bg-white/5 px-4 py-2 text-sm text-slate-300 shadow-sm shadow-indigo-950/40">
-            {total} total roles
+          <div className="flex items-center gap-3">
+            <div className="rounded-full border border-slate-800 bg-white/5 px-4 py-2 text-sm text-slate-300 shadow-sm shadow-indigo-950/40">
+              {total} total roles
+            </div>
+            {/* Profile icon/editor */}
+            <div>
+              {/* lazy load to avoid large bundle impact; keep simple import path */}
+              <React.Suspense fallback={<div className="h-8 w-8 rounded-full bg-white/5" />}
+              >
+                <Profile />
+              </React.Suspense>
+            </div>
           </div>
         </div>
 
