@@ -1,24 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import defaultProfile from '../data/profileDefault.json'
-
-const STORAGE_KEY = 'pfm_profile_v1'
+import {useProfile} from '../hooks/useProfile'
 
 export default function ProfilePage() {
   const navigate = useNavigate()
-  const [profile, setProfile] = useState(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY)
-      if (raw) return JSON.parse(raw)
-    } catch (e) {}
-    return defaultProfile
-  })
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(profile))
-    } catch (e) {}
-  }, [profile])
+  const {profile,setProfile, loading,error, saveProfile} = useProfile()
 
   return (
     <div className="min-h-screen bg-linear-to-br from-[#0b1021] via-[#0b1228] to-[#0a0f20] text-slate-100 py-10">
@@ -93,6 +80,12 @@ export default function ProfilePage() {
                 <button onClick={()=> setProfile((p:any)=>({...p, projects: [...(p.projects||[]), {}]}))} className="mt-1 w-full rounded border border-slate-700 bg-white/5 px-3 py-2 text-sm text-slate-200">+ Add project</button>
               </div>
             </div>
+            <button
+              onClick={() => saveProfile(profile)}
+              className="mt-3 w-full rounded border border-slate-700 bg-white/10 px-3 py-2 text-sm text-slate-200"
+              >
+              Save Profile
+            </button>
           </div>
         </div>
       </div>

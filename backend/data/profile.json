@@ -6,8 +6,8 @@
   },
   "experiences": [
     {
-      "company": "somwhere",
-      "position": "Software Developer",
+      "company": "Baka Company",
+      "position": " Developer",
       "start_date": "2024-01-01",
       "end_date": "2024-08-01",
       "location": "somewhere",
@@ -15,6 +15,12 @@
         "Built React dashboards for internal tools",
         "Improved performance by 30%"
       ]
+    },
+    {
+      "position": "Developer",
+      "company": "JOJO STAR",
+      "start_date": "2024-01-01",
+      "end_date": "2025-08-01"
     }
   ],
   "education": [
@@ -25,11 +31,23 @@
       "end_date": "2026-06-01"
     }
   ],
-  "skills": ["Python", "React", "FastAPI"],
+  "skills": [
+    "Python",
+    "React",
+    "FastAPI"
+  ],
   "projects": [
     {
       "name": "PlsFindMeAJob",
       "description": "Self-hosted resume generator + job scraper"
+    },
+    {
+      "name": "InterviewMaxing",
+      "description": "Helping to maximise interview practice"
+    },
+    {
+      "name": "Supermaxing",
+      "description": "Learnign to super"
     }
   ]
 }
