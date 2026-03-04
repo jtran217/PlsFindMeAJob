@@ -67,7 +67,7 @@ Resume Generator
  - [x] Define canonical resume JSON schema
   - [x] Display Profile page where user can edit 
   - [x] Save button to save info to profile.JSON
-    - [ ] Needs to display education, have fields for linkedin link.
+    - [X] Needs to display education, have fields for linkedin link.
     - [ ] Fix date, currently can type any char and date.
  - [] Send (profile + job description) to Claude
  - [] Receive structured JSON resume
