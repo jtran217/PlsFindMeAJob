@@ -1,33 +1,43 @@
 {
   "basics": {
-    "name": "Johnny Tran",
+    "name": "Johnny",
     "email": "test@example.com",
     "phone": "123-456-7890",
-    "linkedin": "",
-    "github": ""
+    "linkedin": "https://linkedin.com/in/testuser",
+    "github": "https://github.com/testuser"
   },
   "experiences": [
     {
-      "company": "Test Co",
-      "position": "Developer",
-      "start_date": "",
-      "end_date": "",
-      "location": "",
-      "bullets": []
+      "company": "Test Company",
+      "position": "Software Engineer",
+      "start_date": "2023-01-01",
+      "end_date": "2024-01-01",
+      "location": "Remote",
+      "bullets": [
+        "Developed APIs",
+        "Built frontend"
+      ]
     }
   ],
   "education": [
     {
       "institution": "Test University",
-      "location": "",
-      "degree": "CS",
-      "expected_date": "",
-      "start_date": "",
-      "coursework": ""
+      "location": "Test City",
+      "degree": "BS Computer Science",
+      "expected_date": "2024-05-01",
+      "start_date": "2020-08-01",
+      "coursework": "Data Structures, Algorithms"
     }
   ],
   "skills": [
-    "JavaScript"
+    "Python",
+    "FastAPI",
+    "React"
   ],
-  "projects": []
+  "projects": [
+    {
+      "name": "Test Project",
+      "description": "A test project for validation"
+    }
+  ]
 }

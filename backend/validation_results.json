@@ -1,0 +1,52 @@
+{
+  "timestamp": 1772590876.2019668,
+  "summary": {
+    "total_tests": 6,
+    "passed_tests": 6,
+    "failed_tests": 0
+  },
+  "tests": [
+    {
+      "name": "Root Endpoint",
+      "passed": true,
+      "message": "PASS",
+      "response_time": 0.002196,
+      "error_details": null
+    },
+    {
+      "name": "Profile GET",
+      "passed": true,
+      "message": "PASS",
+      "response_time": 0.001,
+      "error_details": null
+    },
+    {
+      "name": "Profile Save Valid",
+      "passed": true,
+      "message": "PASS",
+      "response_time": 0.001073,
+      "error_details": null
+    },
+    {
+      "name": "Profile Save Invalid",
+      "passed": true,
+      "message": "PASS",
+      "response_time": 0.000643,
+      "error_details": null
+    },
+    {
+      "name": "Jobs GET",
+      "passed": true,
+      "message": "PASS",
+      "response_time": 0.005575,
+      "error_details": null
+    },
+    {
+      "name": "Jobs Pagination",
+      "passed": true,
+      "message": "PASS",
+      "response_time": 0.002116,
+      "error_details": null
+    }
+  ]
+}
