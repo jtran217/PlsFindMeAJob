@@ -143,27 +143,28 @@ function App() {
                     )
                 })}
                 </div>
+                <div className="py-4 flex justify-center">
+                  <button
+                    disabled={page <= 1}
+                    onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                    className="px-4 py-2 border rounded mr-2"
+                  >
+                    Prev
+                  </button>
+
+                  <span className="px-4 py-2">Page {page} / {totalPages}</span>
+
+                  <button
+                    disabled={page >= totalPages}
+                    onClick={() => setPage((p) => p + 1)}
+                    className="px-4 py-2 border rounded ml-2"
+                  >
+                    Next
+                  </button>
+                </div>
 
             </div>
-            <div className="py-4 flex justify-center">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(p - 1, 1))}
-                className="px-4 py-2 border rounded mr-2"
-              >
-                Prev
-              </button>
-
-              <span className="px-4 py-2">Page {page} / {totalPages}</span>
-
-              <button
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-                className="px-4 py-2 border rounded ml-2"
-              >
-                Next
-              </button>
-            </div>
+           
           </section>
 
 

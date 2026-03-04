@@ -2,7 +2,9 @@
   "basics": {
     "name": "Johnny Tran",
     "email": "johnny@example.com",
-    "phone": "123-456-7890"
+    "phone": "123-456-7890",
+    "linkedin": "",
+    "github": ""
   },
   "experiences": [
     {
@@ -20,9 +22,11 @@
   "education": [
     {
       "institution": "Silly Baka University",
+      "location": "Calgary, AB",
       "degree": "BSc Computer Science",
       "start_date": "2023-09-01",
-      "end_date": "2026-06-01"
+      "expected_date": "2026-06-01",
+      "coursework": "Object Oriented Programming (OOP), Data Structure and Algorithms, Networking, Database Management Systems"
     }
   ],
   "skills": ["Python", "React", "FastAPI"],

@@ -1,53 +1,33 @@
 {
   "basics": {
     "name": "Johnny Tran",
-    "email": "johnny@example.com",
-    "phone": "123-456-7890"
+    "email": "test@example.com",
+    "phone": "123-456-7890",
+    "linkedin": "",
+    "github": ""
   },
   "experiences": [
     {
-      "company": "Baka Company",
-      "position": " Developer",
-      "start_date": "2024-01-01",
-      "end_date": "2024-08-01",
-      "location": "somewhere",
-      "bullets": [
-        "Built React dashboards for internal tools",
-        "Improved performance by 30%"
-      ]
-    },
-    {
+      "company": "Test Co",
       "position": "Developer",
-      "company": "JOJO STAR",
-      "start_date": "2024-01-01",
-      "end_date": "2025-08-01"
+      "start_date": "",
+      "end_date": "",
+      "location": "",
+      "bullets": []
     }
   ],
   "education": [
     {
-      "institution": "Silly University",
-      "degree": "BSc Computer Science",
-      "start_date": "2023-09-01",
-      "end_date": "2026-06-01"
+      "institution": "Test University",
+      "location": "",
+      "degree": "CS",
+      "expected_date": "",
+      "start_date": "",
+      "coursework": ""
     }
   ],
   "skills": [
-    "Python",
-    "React",
-    "FastAPI"
+    "JavaScript"
   ],
-  "projects": [
-    {
-      "name": "PlsFindMeAJob",
-      "description": "Self-hosted resume generator + job scraper"
-    },
-    {
-      "name": "InterviewMaxing",
-      "description": "Helping to maximise interview practice"
-    },
-    {
-      "name": "Supermaxing",
-      "description": "Learnign to super"
-    }
-  ]
+  "projects": []
 }
