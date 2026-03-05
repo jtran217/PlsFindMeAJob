@@ -5,8 +5,10 @@ Centralizes all configuration settings and paths.
 from pathlib import Path
 from typing import List
 import logging
+from pydantic import Field
+from pydantic_settings import BaseSettings
 
-class Settings:
+class Settings(BaseSettings):
     """Application settings and configuration."""
     
     # Base directories
@@ -29,8 +31,23 @@ class Settings:
     # Logging configuration
     LOG_LEVEL: str = "INFO"
     
-    def __post_init__(self):
-        """Configure logging after initialization."""
+    # OpenRouter AI settings
+    openrouter_api_key: str = Field(..., alias="OPENROUTER_API_KEY")
+    openrouter_base_url: str = Field(default="https://openrouter.ai/api/v1", alias="OPENROUTER_BASE_URL")
+    openrouter_model: str = Field(default="openrouter/free", alias="OPENROUTER_MODEL")
+    openrouter_max_tokens: int = Field(default=4096, alias="OPENROUTER_MAX_TOKENS")
+    openrouter_timeout: int = Field(default=30, alias="OPENROUTER_TIMEOUT")
+
+    # RxResu.me settings (optional for now since we're testing OpenRouter first)
+    rxresume_api_key: str = Field(default="", alias="RXRESUME_API_KEY")
+    rxresume_base_url: str = Field(default="https://rxresu.me/api/openapi", alias="RXRESUME_BASE_URL")
+    rxresume_default_template: str = Field(default="azurill", alias="RXRESUME_DEFAULT_TEMPLATE")
+
+    model_config = {"env_file": "../.env"}
+
+    def __init__(self, **kwargs):
+        """Initialize settings and configure logging."""
+        super().__init__(**kwargs)
         logging.basicConfig(level=getattr(logging, self.LOG_LEVEL))
 
 
