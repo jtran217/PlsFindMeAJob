@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from app.database import engine
 from app.models import Base
-from app.api.routes import profiles, jobs
+from app.api.routes import profiles, jobs, generate
 from app.core.config import settings
 from fastapi.middleware.cors import CORSMiddleware
 import logging
@@ -28,7 +28,7 @@ app.add_middleware(
 # Include routers
 app.include_router(profiles.router, prefix="/api", tags=["profiles"])
 app.include_router(jobs.router, prefix="/api", tags=["jobs"])
-
+app.include_router(generate.router, prefix="/api", tags=["generate"])
 @app.get("/")
 def root():
     """Root endpoint with welcome message."""
