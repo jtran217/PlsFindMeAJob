@@ -1,0 +1,347 @@
+// This JSON defined by payload in rx Resume, this will need to be updated if there are any changes in the payload 
+{
+  "name": "<string>",
+  "slug": "<string>",
+  "tags": ["<string>"],
+  "data": {
+    "picture": {
+      "hidden": true,
+      "url": "<string>",
+      "size": 272,
+      "rotation": 180,
+      "aspectRatio": 1.5,
+      "borderRadius": 50,
+      "borderColor": "<string>",
+      "borderWidth": 1,
+      "shadowColor": "<string>",
+      "shadowWidth": 1
+    },
+    "basics": {
+      "name": "<string>",
+      "headline": "<string>",
+      "email": "<string>",
+      "phone": "<string>",
+      "location": "<string>",
+      "website": {
+        "url": "<string>",
+        "label": "<string>"
+      },
+      "customFields": [
+        {
+          "id": "<string>",
+          "icon": "<string>",
+          "text": "<string>",
+          "link": "<string>"
+        }
+      ]
+    },
+    "summary": {
+      "title": "<string>",
+      "columns": 123,
+      "hidden": true,
+      "content": "<string>"
+    },
+    "sections": {
+      "profiles": {
+        "title": "<string>",
+        "columns": 123,
+        "hidden": true,
+        "items": [
+          {
+            "id": "<string>",
+            "hidden": true,
+            "icon": "<string>",
+            "network": "<string>",
+            "username": "<string>",
+            "website": {
+              "url": "<string>",
+              "label": "<string>"
+            },
+            "options": { "showLinkInTitle": true }
+          }
+        ]
+      },
+      "experience": {
+        "title": "<string>",
+        "columns": 123,
+        "hidden": true,
+        "items": [
+          {
+            "id": "<string>",
+            "hidden": true,
+            "company": "<string>",
+            "position": "<string>",
+            "location": "<string>",
+            "period": "<string>",
+            "website": {
+              "url": "<string>",
+              "label": "<string>"
+            },
+            "description": "<string>",
+            "options": { "showLinkInTitle": true }
+          }
+        ]
+      },
+      "education": {
+        "title": "<string>",
+        "columns": 123,
+        "hidden": true,
+        "items": [
+          {
+            "id": "<string>",
+            "hidden": true,
+            "school": "<string>",
+            "degree": "<string>",
+            "area": "<string>",
+            "grade": "<string>",
+            "location": "<string>",
+            "period": "<string>",
+            "website": {
+              "url": "<string>",
+              "label": "<string>"
+            },
+            "description": "<string>",
+            "options": { "showLinkInTitle": true }
+          }
+        ]
+      },
+      "projects": {
+        "title": "<string>",
+        "columns": 123,
+        "hidden": true,
+        "items": [
+          {
+            "id": "<string>",
+            "hidden": true,
+            "name": "<string>",
+            "period": "<string>",
+            "website": {
+              "url": "<string>",
+              "label": "<string>"
+            },
+            "description": "<string>",
+            "options": { "showLinkInTitle": true }
+          }
+        ]
+      },
+      "skills": {
+        "title": "<string>",
+        "columns": 123,
+        "hidden": true,
+        "items": [
+          {
+            "id": "<string>",
+            "hidden": true,
+            "icon": "<string>",
+            "name": "<string>",
+            "proficiency": "<string>",
+            "level": 2.5,
+            "keywords": ["<string>"],
+            "options": { "showLinkInTitle": true }
+          }
+        ]
+      },
+      "languages": {
+        "title": "<string>",
+        "columns": 123,
+        "hidden": true,
+        "items": [
+          {
+            "id": "<string>",
+            "hidden": true,
+            "language": "<string>",
+            "fluency": "<string>",
+            "level": 2.5,
+            "options": { "showLinkInTitle": true }
+          }
+        ]
+      },
+      "interests": {
+        "title": "<string>",
+        "columns": 123,
+        "hidden": true,
+        "items": [
+          {
+            "id": "<string>",
+            "hidden": true,
+            "icon": "<string>",
+            "name": "<string>",
+            "keywords": ["<string>"],
+            "options": { "showLinkInTitle": true }
+          }
+        ]
+      },
+      "awards": {
+        "title": "<string>",
+        "columns": 123,
+        "hidden": true,
+        "items": [
+          {
+            "id": "<string>",
+            "hidden": true,
+            "title": "<string>",
+            "awarder": "<string>",
+            "date": "<string>",
+            "website": {
+              "url": "<string>",
+              "label": "<string>"
+            },
+            "description": "<string>",
+            "options": { "showLinkInTitle": true }
+          }
+        ]
+      },
+      "certifications": {
+        "title": "<string>",
+        "columns": 123,
+        "hidden": true,
+        "items": [
+          {
+            "id": "<string>",
+            "hidden": true,
+            "title": "<string>",
+            "issuer": "<string>",
+            "date": "<string>",
+            "website": {
+              "url": "<string>",
+              "label": "<string>"
+            },
+            "description": "<string>",
+            "options": { "showLinkInTitle": true }
+          }
+        ]
+      },
+      "publications": {
+        "title": "<string>",
+        "columns": 123,
+        "hidden": true,
+        "items": [
+          {
+            "id": "<string>",
+            "hidden": true,
+            "title": "<string>",
+            "publisher": "<string>",
+            "date": "<string>",
+            "website": {
+              "url": "<string>",
+              "label": "<string>"
+            },
+            "description": "<string>",
+            "options": { "showLinkInTitle": true }
+          }
+        ]
+      },
+      "volunteer": {
+        "title": "<string>",
+        "columns": 123,
+        "hidden": true,
+        "items": [
+          {
+            "id": "<string>",
+            "hidden": true,
+            "organization": "<string>",
+            "location": "<string>",
+            "period": "<string>",
+            "website": {
+              "url": "<string>",
+              "label": "<string>"
+            },
+            "description": "<string>",
+            "options": { "showLinkInTitle": true }
+          }
+        ]
+      },
+      "references": {
+        "title": "<string>",
+        "columns": 123,
+        "hidden": true,
+        "items": [
+          {
+            "id": "<string>",
+            "hidden": true,
+            "name": "<string>",
+            "position": "<string>",
+            "website": {
+              "url": "<string>",
+              "label": "<string>"
+            },
+            "phone": "<string>",
+            "description": "<string>",
+            "options": { "showLinkInTitle": true }
+          }
+        ]
+      }
+    },
+    "customSections": [
+      {
+        "title": "<string>",
+        "columns": 123,
+        "hidden": true,
+        "id": "<string>",
+        "type": "summary",
+        "items": [
+          {
+            "id": "<string>",
+            "hidden": true,
+            "recipient": "<string>",
+            "content": "<string>",
+            "options": { "showLinkInTitle": true }
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "template": "azurill",
+      "layout": {
+        "sidebarWidth": 30,
+        "pages": [
+          {
+            "fullWidth": true,
+            "main": ["<string>"],
+            "sidebar": ["<string>"]
+          }
+        ]
+      },
+      "css": {
+        "enabled": true,
+        "value": "<string>"
+      },
+      "page": {
+        "gapX": 1,
+        "gapY": 1,
+        "marginX": 1,
+        "marginY": 1,
+        "format": "a4",
+        "locale": "<string>",
+        "hideIcons": true
+      },
+      "design": {
+        "level": {
+          "icon": "<string>",
+          "type": "hidden"
+        },
+        "colors": {
+          "primary": "<string>",
+          "text": "<string>",
+          "background": "<string>"
+        }
+      },
+      "typography": {
+        "body": {
+          "fontFamily": "<string>",
+          "fontWeights": ["100"],
+          "fontSize": 15,
+          "lineHeight": 2.25
+        },
+        "heading": {
+          "fontFamily": "<string>",
+          "fontWeights": ["100"],
+          "fontSize": 15,
+          "lineHeight": 2.25
+        }
+      },
+      "notes": "<string>"
+    }
+  },
+  "isPublic": true
+}

@@ -1,0 +1,72 @@
+{
+  "name": "string",
+  "slug": "string", 
+  "tags": ["string"],
+  "data": {
+    "basics": {
+      "name": "string",
+      "email": "string",
+      "phone": "string",
+      "location": "string"
+    },
+    "summary": {
+      "title": "string",
+      "hidden": false,
+      "content": "string"
+    },
+    "sections": {
+      "experience": {
+        "title": "Experience",
+        "hidden": false,
+        "items": [
+          {
+            "id": "string",
+            "company": "string",
+            "position": "string",
+            "location": "string", 
+            "date": "string",
+            "summary": "string"
+          }
+        ]
+      },
+      "education": {
+        "title": "Education",
+        "hidden": false,
+        "items": [
+          {
+            "id": "string",
+            "institution": "string",
+            "degree": "string",
+            "date": "string",
+            "location": "string"
+          }
+        ]
+      },
+      "skills": {
+        "title": "Skills",
+        "hidden": false,
+        "items": [
+          {
+            "id": "string",
+            "name": "string",
+            "description": "string",
+            "level": "string"
+          }
+        ]
+      },
+      "projects": {
+        "title": "Projects", 
+        "hidden": false,
+        "items": [
+          {
+            "id": "string",
+            "name": "string",
+            "description": "string",
+            "date": "string",
+            "url": "string"
+          }
+        ]
+      }
+    }
+  }
+}

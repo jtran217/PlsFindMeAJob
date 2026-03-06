@@ -1,0 +1,23 @@
+{
+  "software_engineer": {
+    "title": "Senior Software Engineer - Full Stack",
+    "company": "TechCorp Solutions",
+    "description": "We are seeking a Senior Software Engineer to join our dynamic team building next-generation web applications. The ideal candidate will have experience with React, Python, FastAPI, and modern development practices. You will be responsible for building scalable web applications, developing RESTful APIs, and collaborating with cross-functional teams to deliver high-quality software solutions. This role offers the opportunity to work on cutting-edge projects using the latest technologies in a fast-paced startup environment.",
+    "requirements": "5+ years experience in software development, Expert-level React and TypeScript, Strong Python and FastAPI experience, Experience with PostgreSQL or similar databases, Git version control, Agile development methodologies, Strong problem-solving and communication skills",
+    "technologies": ["React", "TypeScript", "Python", "FastAPI", "PostgreSQL", "Git", "Docker", "AWS"]
+  },
+  "data_scientist": {
+    "title": "Data Scientist - Machine Learning",
+    "company": "DataInsights Inc",
+    "description": "Join our data science team to build innovative machine learning solutions that drive business decisions. You will work with large datasets, develop predictive models, and create data visualizations to communicate insights to stakeholders. The role involves collaborating with engineering teams to deploy models into production and working closely with business analysts to understand requirements and deliver actionable insights.",
+    "requirements": "3+ years experience in data science or machine learning, Strong Python programming skills, Experience with pandas, numpy, scikit-learn, Experience with data visualization tools (matplotlib, seaborn, plotly), Knowledge of SQL and database systems, Experience with cloud platforms (AWS, GCP, or Azure), Strong statistical analysis skills",
+    "technologies": ["Python", "pandas", "numpy", "scikit-learn", "matplotlib", "SQL", "AWS", "Jupyter", "Git"]
+  },
+  "frontend_developer": {
+    "title": "Frontend Developer - React Specialist",
+    "company": "WebCraft Studios",
+    "description": "We're looking for a talented Frontend Developer to create beautiful, responsive user interfaces for our client projects. You will work with our design team to implement pixel-perfect designs using React, TypeScript, and modern CSS frameworks. The role involves optimizing applications for performance, ensuring cross-browser compatibility, and implementing best practices for accessibility and SEO.",
+    "requirements": "3+ years experience with React development, Proficiency in TypeScript and modern JavaScript (ES6+), Experience with CSS frameworks (Tailwind CSS, Bootstrap, or similar), Knowledge of responsive design and mobile-first development, Experience with version control (Git), Understanding of web performance optimization, Familiarity with testing frameworks (Jest, React Testing Library)",
+    "technologies": ["React", "TypeScript", "JavaScript", "Tailwind CSS", "HTML5", "CSS3", "Git", "Webpack", "Jest"]
+  }
+}
