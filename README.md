@@ -48,40 +48,9 @@ Resume Generator
 
 ## Roadmap
 
-### Phase 1 — Foundation
-- [X] Scrape job postings from one job site
-- [X] Normalize and store job data
-- [X] CLI or script-based workflow
+See [todo.md](./todo.md) for detailed progress tracking and current tasks.
 
-### Phase 2 — Visibility
-- [X] Simple frontend to view job postings
-  - [X] Make simple fast api backend to talk to database.
-  - [X] make frontend talk to backend.
-  - [X] Fix job description as it includes some markdown content. Probably use a markdown render to display this text.
-  - [X] Some sort of pagination
-  - [X] Scrollable job card section
-  - [X] have the job description be a scrollable content.
-- [ ] Basic filtering and searching
-
-### Phase 3 — AI-Assisted Resume Generation
- - [x] Define canonical resume JSON schema
-  - [x] Display Profile page where user can edit 
-  - [x] Save button to save info to profile.JSON
-    - [x] Needs to display education, have fields for linkedin link.
-    - [ ] Fix date, currently can type any char and date.
- - [] Send (profile + job description) to Claude
- - [] Receive structured JSON resume
- - [] Inject JSON into Reactive Resume
- - [] Export to PDF
-### Phase 4 — Incremental Intelligence
-- [ ] Keyword matching
-- [ ] Simple heuristic-based scoring
-- [ ] Resume–job relevance indicators
-
-### Phase 5 — Nice-to-Haves
-- [ ] Dockerization
-- [ ] Multiple job boards
-- [ ] ML-based experiments (optional)
+**Current Focus**: AI-Assisted Resume Generation with enhanced resume builder integration.
 
 ## Why This Repo Exists
 
