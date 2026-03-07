@@ -22,7 +22,7 @@ class GeneratorService:
             }
 
             prompt = self.client.inject_prompt(prompt_template, data)
-
+            # Call OpenAI API to get optimized resume
             response = self.client.client.chat.completions.create(
                 model=self.client.default_model,
                 messages=[{"role": "user", "content": prompt}],

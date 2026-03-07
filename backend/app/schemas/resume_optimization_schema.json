@@ -1,4 +1,3 @@
-// This JSON defined by payload in rx Resume, this will need to be updated if there are any changes in the payload 
 {
   "name": "<string>",
   "slug": "<string>",
