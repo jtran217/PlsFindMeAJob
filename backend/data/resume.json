@@ -184,13 +184,13 @@
       "interests": {
         "title": "Interests",
         "columns": 1,
-        "hidden": false,
+        "hidden": true,
         "items": []
       },
       "awards": {
         "title": "Awards",
         "columns": 1,
-        "hidden": false,
+        "hidden": true,
         "items": []
       },
       "certifications": {

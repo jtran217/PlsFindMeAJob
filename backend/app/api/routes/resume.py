@@ -4,7 +4,7 @@ Provides endpoints for the new resume optimization format.
 """
 import logging
 from typing import Dict, Any
-from fastapi import APIRouter, HTTPException, status, Query
+from fastapi import APIRouter, HTTPException, status
 
 from app.core.exceptions import (
     ProfileException,
@@ -24,21 +24,18 @@ resume_service = ResumeService()
 
 
 @router.get("/resume", response_model=Resume)
-async def get_resume(auto_migrate: bool = Query(True, description="Automatically migrate legacy profiles")):
+async def get_resume():
     """
     Retrieve user resume data in the enhanced format.
     
-    Args:
-        auto_migrate: Whether to automatically migrate from legacy profile format
-    
     Returns:
-        Resume: Complete resume with all sections
+        Resume: Complete resume data or default if not found
         
     Raises:
         HTTPException: For various error conditions
     """
     try:
-        resume = await resume_service.get_resume(auto_migrate=auto_migrate)
+        resume = await resume_service.get_resume()
         return resume
         
     except ProfileException as e:
@@ -109,35 +106,6 @@ async def save_resume(resume_data: Dict[str, Any]):
                 "success": False,
                 "message": "Failed to save resume"
             }
-        )
-
-
-@router.post("/resume/migrate", response_model=Resume)
-async def migrate_profile():
-    """
-    Manually migrate legacy profile to resume format.
-    
-    Returns:
-        Resume: Migrated resume data
-        
-    Raises:
-        HTTPException: If migration fails
-    """
-    try:
-        migrated_resume = await resume_service.migrate_legacy_profile()
-        return migrated_resume
-        
-    except ProfileException as e:
-        logger.error(f"Migration failed: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Migration failed: {e}"
-        )
-    except Exception as e:
-        logger.error(f"Unexpected error during migration: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Migration failed"
         )
 
 

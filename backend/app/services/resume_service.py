@@ -18,8 +18,6 @@ from app.core.exceptions import (
     ProfilePermissionError
 )
 from app.models.resume_schemas import Resume, ResumeResponse, ResumeSaveResponse, ResumeData, EnhancedBasics
-from app.utils.profile_migration import ProfileMigrator
-from app.utils.file_handler import ProfileFileHandler
 
 logger = logging.getLogger(__name__)
 
@@ -28,20 +26,15 @@ class ResumeService:
     """Service class for handling all resume-related business logic."""
     
     def __init__(self):
-        """Initialize ResumeService with file handler and migrator."""
-        self.file_handler = ProfileFileHandler(settings.PROFILE_PATH)
-        self.migrator = ProfileMigrator()
+        """Initialize ResumeService."""
         self.resume_path = Path(settings.PROFILE_PATH).parent / "resume.json"
     
-    async def get_resume(self, auto_migrate: bool = True) -> Resume:
+    async def get_resume(self) -> Resume:
         """
-        Retrieve user resume with proper validation and migration support.
+        Retrieve user resume with proper validation.
         
-        Args:
-            auto_migrate: Whether to automatically migrate legacy profiles
-            
         Returns:
-            Resume: Validated resume data
+            Resume: Validated resume data or default resume if not found
             
         Raises:
             ProfileException: For resume-related errors
@@ -55,17 +48,10 @@ class ResumeService:
                     logger.debug("Resume loaded successfully from resume.json")
                     return validated_resume
                 except (ValidationError, ProfileCorruptedError) as e:
-                    logger.warning(f"Resume file corrupted, attempting migration: {e}")
-                    if auto_migrate:
-                        return await self._migrate_and_save()
-                    raise ProfileCorruptedError(f"Resume file corrupted: {e}")
-            
-            elif auto_migrate:
-                logger.info("No resume file found, attempting migration from legacy profile")
-                return await self._migrate_and_save()
-            
+                    logger.warning(f"Resume file corrupted, returning default: {e}")
+                    return self._get_default_resume()
             else:
-                logger.info("No resume or profile data found, returning default")
+                logger.info("No resume file found, returning default")
                 return self._get_default_resume()
                 
         except FileOperationError as e:
@@ -110,13 +96,6 @@ class ResumeService:
             
             self._save_resume_data(validated_resume.dict())
             
-            try:
-                legacy_data = self.migrator.migrate_resume_to_legacy(validated_resume)
-                self.file_handler.save_profile_data(legacy_data)
-                logger.debug("Legacy profile backup saved")
-            except Exception as e:
-                logger.warning(f"Failed to save legacy backup: {e}")
-            
             logger.info("Resume saved successfully")
             return ResumeSaveResponse(
                 success=True,
@@ -138,22 +117,6 @@ class ResumeService:
         except Exception as e:
             logger.error(f"Unexpected error saving resume: {e}")
             raise ProfileException(f"Unexpected error saving resume: {e}")
-    
-    async def migrate_legacy_profile(self) -> Resume:
-        """
-        Manually migrate legacy profile to resume format.
-        
-        Returns:
-            Resume: Migrated resume
-            
-        Raises:
-            ProfileException: If migration fails
-        """
-        try:
-            return await self._migrate_and_save()
-        except Exception as e:
-            logger.error(f"Migration failed: {e}")
-            raise ProfileException(f"Failed to migrate profile: {e}")
     
     async def validate_resume_data(self, resume_data: Dict[str, Any]) -> Resume:
         """
@@ -215,20 +178,6 @@ class ResumeService:
             raise ProfilePermissionError(f"Permission denied writing to: {self.resume_path}")
         except Exception as e:
             raise FileOperationError(f"Error writing resume file: {e}")
-    
-    async def _migrate_and_save(self) -> Resume:
-        """Migrate legacy profile to resume format and save."""
-        try:
-            legacy_data = self.file_handler.load_profile_data()
-            migrated_resume = self.migrator.migrate_legacy_to_resume(legacy_data)
-            self._save_resume_data(migrated_resume.dict())
-            
-            logger.info(f"Successfully migrated and saved resume for {migrated_resume.data.basics.name}")
-            return migrated_resume
-            
-        except Exception as e:
-            logger.error(f"Migration and save failed: {e}")
-            raise ProfileException(f"Failed to migrate profile: {e}")
     
     def _get_default_resume(self) -> Resume:
         """
