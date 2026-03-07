@@ -5,7 +5,7 @@ This module contains the JobsService class which encapsulates all job-related
 operations including querying, filtering, and pagination.
 """
 
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 from sqlalchemy.orm import Session
 from app.models.database import Job
 from app.core.exceptions import ValidationError
@@ -26,13 +26,14 @@ class JobsService:
         """
         self.db = db
     
-    def get_jobs_paginated(self, skip: int = 0, limit: int = 15) -> Dict[str, Any]:
+    def get_jobs_paginated(self, skip: int = 0, limit: int = 15, status: Optional[str] = None) -> Dict[str, Any]:
         """
         Get paginated job listings with total count.
         
         Args:
             skip: Number of jobs to skip for pagination
             limit: Maximum number of jobs to return
+            status: Optional status filter ('ready', 'applied', 'all', etc.)
             
         Returns:
             Dictionary containing total count and job data
@@ -49,13 +50,20 @@ class JobsService:
             raise ValidationError("Limit parameter cannot exceed 100")
         
         try:
-            # Get total count of jobs
-            total = self.db.query(Job).count()
-            logger.info(f"Total jobs in database: {total}")
+            # Build base query
+            query = self.db.query(Job)
+            
+            # Apply status filter if provided
+            if status:
+                query = query.filter(Job.status == status)
+            
+            # Get total count of jobs (after filtering)
+            total = query.count()
+            logger.info(f"Total jobs in database{f' with status {status}' if status else ''}: {total}")
             
             # Get paginated jobs
-            jobs = self.db.query(Job).offset(skip).limit(limit).all()
-            logger.info(f"Retrieved {len(jobs)} jobs (skip={skip}, limit={limit})")
+            jobs = query.offset(skip).limit(limit).all()
+            logger.info(f"Retrieved {len(jobs)} jobs (skip={skip}, limit={limit}, status={status})")
             
             return {
                 "total": total,
@@ -87,6 +95,32 @@ class JobsService:
             raise ValidationError(f"Job with ID {job_id} not found")
             
         return job
+    
+    def get_jobs_count_by_status(self) -> Dict[str, int]:
+        """
+        Get the count of jobs grouped by status.
+        
+        Returns:
+            Dictionary mapping status to count
+        """
+        try:
+            from sqlalchemy import func
+            result = self.db.query(Job.status, func.count(Job.id)).group_by(Job.status).all()
+            
+            counts = {}
+            total = 0
+            for status, count in result:
+                counts[status] = count
+                total += count
+            
+            # Add total count
+            counts['total'] = total
+            
+            logger.info(f"Job counts by status: {counts}")
+            return counts
+        except Exception as e:
+            logger.error(f"Error counting jobs by status: {str(e)}")
+            raise ValidationError(f"Failed to count jobs by status: {str(e)}")
     
     def get_jobs_count(self) -> int:
         """

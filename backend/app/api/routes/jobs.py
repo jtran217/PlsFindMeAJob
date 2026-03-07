@@ -24,15 +24,17 @@ def get_jobs(
     skip: int = Query(0, ge=0, description="Number of jobs to skip for pagination"),
     limit: int = Query(15, ge=1, le=100, description="Maximum number of jobs to return"),
     search: Optional[str] = Query(None, description="Search term for job title or company"),
+    status: Optional[str] = Query(None, description="Filter jobs by application status"),
     db: Session = Depends(get_db)
 ):
     """
-    Get paginated job listings with optional search functionality.
+    Get paginated job listings with optional search and status filtering.
     
     Args:
         skip: Number of jobs to skip for pagination (default: 0)
         limit: Maximum number of jobs to return (default: 15, max: 100)
         search: Optional search term for filtering jobs by title or company
+        status: Optional status filter ('ready', 'applied', 'all', etc.)
         db: Database session (injected)
         
     Returns:
@@ -50,8 +52,8 @@ def get_jobs(
             result = jobs_service.search_jobs(search, skip, limit)
             logger.info(f"Search request: '{search}' returned {len(result['data'])} jobs")
         else:
-            result = jobs_service.get_jobs_paginated(skip, limit)
-            logger.info(f"Pagination request: skip={skip}, limit={limit} returned {len(result['data'])} jobs")
+            result = jobs_service.get_jobs_paginated(skip, limit, status)
+            logger.info(f"Pagination request: skip={skip}, limit={limit}, status={status} returned {len(result['data'])} jobs")
         
         return result
         
@@ -63,6 +65,37 @@ def get_jobs(
         raise HTTPException(
             status_code=500, 
             detail="An internal error occurred while retrieving jobs"
+        )
+
+
+@router.get("/jobs/count/status")
+def get_jobs_count_by_status(db: Session = Depends(get_db)):
+    """
+    Get the count of jobs grouped by application status.
+    
+    Args:
+        db: Database session (injected)
+        
+    Returns:
+        Dictionary containing counts per status
+        
+    Raises:
+        HTTPException: If database error occurs
+    """
+    try:
+        jobs_service = JobsService(db)
+        counts = jobs_service.get_jobs_count_by_status()
+        
+        return counts
+        
+    except ValidationError as e:
+        logger.warning(f"Validation error in get_jobs_count_by_status: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Unexpected error in get_jobs_count_by_status: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="An internal error occurred while counting jobs by status"
         )
 
 
