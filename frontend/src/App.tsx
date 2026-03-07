@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Profile from './components/Profile'
-import {useJobs} from './hooks/useJobs.ts'
+import {useJobs, useJobCounts} from './hooks/useJobs.ts'
 import {formatDate} from './utils/formatDate.ts'
 import ReactMarkdown from 'react-markdown'
 import rehypeSanitize from "rehype-sanitize";
@@ -9,26 +10,17 @@ type Tab = 'ready' | 'applied' | 'all'
 
 
 function App() {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<Tab>('ready')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [page,setPage] = useState(1);
-  const {jobs,loading,error,total} = useJobs(page,10);
-  const totalPages = Math.ceil(total / 10);
+  const {jobs, total} = useJobs(page, 10, activeTab)
+  const {counts} = useJobCounts()
+  const totalPages = Math.ceil(total / 10)
   const listRef = useRef<HTMLDivElement | null>(null)
 
-  const counts = useMemo(
-    () => ({
-      ready: jobs.filter((job) => job.status === 'ready').length,
-      applied: jobs.filter((job) => job.status === 'applied').length,
-      all: jobs.length,
-    }),
-    [jobs],
-  )
-
-  const filteredJobs = useMemo(() => {
-    if (activeTab === 'all') return jobs
-    return jobs.filter((job) => job.status === activeTab)
-  }, [activeTab,jobs])
+  // Jobs are already filtered by the backend based on activeTab
+  const filteredJobs = jobs
 
   useEffect(() => {
     if (!filteredJobs.length) {
@@ -36,11 +28,15 @@ function App() {
       return
     }
 
-    const alreadySelected = filteredJobs.some((job) => job.id === selectedId)
-    if (!alreadySelected) {
-      setSelectedId(filteredJobs[0].id)
+    if (!selectedId || !filteredJobs.find((job) => job.id === selectedId)) {
+      setSelectedId(filteredJobs[0]?.id ?? null)
     }
   }, [filteredJobs, selectedId])
+
+  // Reset to page 1 when changing tabs
+  useEffect(() => {
+    setPage(1)
+  }, [activeTab])
 
   useEffect(() => {
     window.scrollTo({
@@ -64,22 +60,23 @@ function App() {
             <div className="rounded-full border border-slate-800 bg-white/5 px-4 py-2 text-sm text-slate-300 shadow-sm shadow-indigo-950/40">
               {total} total roles
             </div>
-            {/* Profile icon/editor */}
-            <div>
-              {/* lazy load to avoid large bundle impact; keep simple import path */}
-              <React.Suspense fallback={<div className="h-8 w-8 rounded-full bg-white/5" />}
-              >
-                <Profile />
-              </React.Suspense>
-            </div>
+            <button
+              onClick={() => navigate('/resume')}
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition-colors"
+            >
+              Resume Builder
+            </button>
+            <React.Suspense fallback={<div>Loading...</div>}>
+              <Profile />
+            </React.Suspense>
           </div>
         </div>
 
         <div className="mb-6 flex gap-3 overflow-x-auto pb-2">
           {[
-            { key: 'ready', label: 'Ready', count: counts.ready },
-            { key: 'applied', label: 'Applied', count: counts.applied },
-            { key: 'all', label: 'All Jobs', count: total },
+            { key: 'ready', label: 'Ready', count: counts.ready || 0 },
+            { key: 'applied', label: 'Applied', count: counts.applied || 0 },
+            { key: 'all', label: 'All Jobs', count: counts.all || 0 },
           ].map((tab) => {
             const isActive = activeTab === tab.key
             return (

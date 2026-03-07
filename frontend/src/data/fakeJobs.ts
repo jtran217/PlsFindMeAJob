@@ -35,6 +35,7 @@ export const fakeJobs: Job[] = [
     company_url_direct: "https://eitoxford.com/careers",
     skills: "React, TypeScript, Node.js, GraphQL, Tailwind CSS",
     experience_range: "2-4 years",
+    status: "ready",
   },
   {
     id: "2",
@@ -53,6 +54,7 @@ export const fakeJobs: Job[] = [
     company_url_direct: "https://gresearch.co.uk/careers",
     skills: "Python, C#, Distributed Systems, Algorithms",
     experience_range: "0-1 years",
+    status: "ready",
   },
   {
     id: "3",
@@ -71,6 +73,7 @@ export const fakeJobs: Job[] = [
     company_url_direct: "https://oliverwyman.com/careers",
     skills: "React, Python, PostgreSQL, AWS, Docker",
     experience_range: "2-5 years",
+    status: "ready",
   },
   {
     id: "4",
@@ -89,6 +92,7 @@ export const fakeJobs: Job[] = [
     company_url_direct: "https://lloydsbankinggroup.com/careers",
     skills: "Java, Spring Boot, Kafka, Kubernetes, SQL",
     experience_range: "3-5 years",
+    status: "ready",
   },
   {
     id: "5",
@@ -107,6 +111,7 @@ export const fakeJobs: Job[] = [
     company_url_direct: "https://db.com/careers",
     skills: "Angular, TypeScript, RxJS, WebSockets, D3.js",
     experience_range: "3-6 years",
+    status: "ready",
   },
   {
     id: "6",
@@ -125,6 +130,7 @@ export const fakeJobs: Job[] = [
     company_url_direct: "https://caspianone.com/careers",
     skills: "Terraform, AWS, GCP, Kubernetes, Python",
     experience_range: "2-4 years",
+    status: "ready",
   },
   {
     id: "7",
@@ -143,6 +149,7 @@ export const fakeJobs: Job[] = [
     company_url_direct: "https://digital-ai.com/careers",
     skills: "Docker, Kubernetes, Jenkins, Prometheus, Bash",
     experience_range: "2-4 years",
+    status: "ready",
   },
   {
     id: "8",
@@ -161,5 +168,6 @@ export const fakeJobs: Job[] = [
     company_url_direct: "https://amazon.com/jobs",
     skills: "Python, PyTorch, TensorFlow, SQL, AWS SageMaker",
     experience_range: "0-1 years",
+    status: "ready",
   },
 ];

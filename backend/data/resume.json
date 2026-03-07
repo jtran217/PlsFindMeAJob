@@ -1,0 +1,280 @@
+{
+  "name": "Johnny",
+  "slug": "johnny",
+  "tags": [
+    "Software Development"
+  ],
+  "data": {
+    "picture": {
+      "hidden": true,
+      "url": "",
+      "size": 272,
+      "rotation": 0,
+      "aspectRatio": 1.0,
+      "borderRadius": 0,
+      "borderColor": "",
+      "borderWidth": 0,
+      "shadowColor": "",
+      "shadowWidth": 0
+    },
+    "basics": {
+      "name": "Johnny",
+      "headline": "",
+      "email": "wtest@example.com",
+      "phone": "123-456-7890",
+      "location": "Edmonton",
+      "website": {
+        "url": "https://linkedin.com/in/testuser",
+        "label": "LinkedIn Profile"
+      },
+      "customFields": []
+    },
+    "summary": {
+      "title": "Summary",
+      "columns": 1,
+      "hidden": false,
+      "content": ""
+    },
+    "sections": {
+      "profiles": {
+        "title": "Profiles",
+        "columns": 1,
+        "hidden": false,
+        "items": [
+          {
+            "id": "profile-github",
+            "hidden": false,
+            "icon": "github",
+            "network": "GitHub",
+            "username": "",
+            "website": {
+              "url": "https://github.com/testuser",
+              "label": "GitHub Profile"
+            },
+            "options": {
+              "showLinkInTitle": true
+            }
+          }
+        ]
+      },
+      "experience": {
+        "title": "Experience",
+        "columns": 1,
+        "hidden": false,
+        "items": [
+          {
+            "id": "experience-1",
+            "hidden": false,
+            "company": "Test Company",
+            "position": "Software Engineer",
+            "location": "Remote",
+            "period": "2023-01-01 - 2024-01-01",
+            "website": {
+              "url": "",
+              "label": ""
+            },
+            "description": "• Developed APIs\n• Built frontend",
+            "options": {
+              "showLinkInTitle": true
+            }
+          }
+        ]
+      },
+      "education": {
+        "title": "Education",
+        "columns": 1,
+        "hidden": false,
+        "items": [
+          {
+            "id": "education-1",
+            "hidden": false,
+            "school": "Test University",
+            "degree": "BS Computer Science",
+            "area": "BS Computer Science",
+            "grade": "",
+            "location": "Test City",
+            "period": "2020-08-01 - 2024-05-01",
+            "website": {
+              "url": "",
+              "label": ""
+            },
+            "description": "Data Structures, Algorithms",
+            "options": {
+              "showLinkInTitle": true
+            }
+          }
+        ]
+      },
+      "projects": {
+        "title": "Projects",
+        "columns": 1,
+        "hidden": false,
+        "items": [
+          {
+            "id": "project-1",
+            "hidden": false,
+            "name": "Test Project",
+            "period": "",
+            "website": {
+              "url": "",
+              "label": ""
+            },
+            "description": "A test project for validation",
+            "options": {
+              "showLinkInTitle": true
+            }
+          }
+        ]
+      },
+      "skills": {
+        "title": "Skills",
+        "columns": 1,
+        "hidden": false,
+        "items": [
+          {
+            "id": "skill-1",
+            "hidden": false,
+            "icon": "",
+            "name": "Python",
+            "proficiency": "Intermediate",
+            "level": 3.0,
+            "keywords": [
+              "Python"
+            ],
+            "options": {
+              "showLinkInTitle": true
+            }
+          },
+          {
+            "id": "skill-2",
+            "hidden": false,
+            "icon": "",
+            "name": "FastAPI",
+            "proficiency": "Intermediate",
+            "level": 3.0,
+            "keywords": [
+              "FastAPI"
+            ],
+            "options": {
+              "showLinkInTitle": true
+            }
+          },
+          {
+            "id": "skill-3",
+            "hidden": false,
+            "icon": "",
+            "name": "React",
+            "proficiency": "Intermediate",
+            "level": 3.0,
+            "keywords": [
+              "React"
+            ],
+            "options": {
+              "showLinkInTitle": true
+            }
+          }
+        ]
+      },
+      "languages": {
+        "title": "Languages",
+        "columns": 1,
+        "hidden": true,
+        "items": []
+      },
+      "interests": {
+        "title": "Interests",
+        "columns": 1,
+        "hidden": false,
+        "items": []
+      },
+      "awards": {
+        "title": "Awards",
+        "columns": 1,
+        "hidden": false,
+        "items": []
+      },
+      "certifications": {
+        "title": "Certifications",
+        "columns": 1,
+        "hidden": true,
+        "items": []
+      },
+      "publications": {
+        "title": "Publications",
+        "columns": 1,
+        "hidden": false,
+        "items": []
+      },
+      "volunteer": {
+        "title": "Volunteer",
+        "columns": 1,
+        "hidden": false,
+        "items": []
+      },
+      "references": {
+        "title": "References",
+        "columns": 1,
+        "hidden": false,
+        "items": []
+      }
+    },
+    "customSections": [],
+    "metadata": {
+      "template": "azurill",
+      "layout": {
+        "sidebarWidth": 30,
+        "pages": [
+          {
+            "fullWidth": false,
+            "main": [],
+            "sidebar": []
+          }
+        ]
+      },
+      "css": {
+        "enabled": false,
+        "value": ""
+      },
+      "page": {
+        "gapX": 16,
+        "gapY": 16,
+        "marginX": 16,
+        "marginY": 16,
+        "format": "a4",
+        "locale": "en",
+        "hideIcons": false
+      },
+      "design": {
+        "level": {
+          "icon": "",
+          "type": "hidden"
+        },
+        "colors": {
+          "primary": "#000000",
+          "text": "#000000",
+          "background": "#ffffff"
+        }
+      },
+      "typography": {
+        "body": {
+          "fontFamily": "",
+          "fontWeights": [
+            "400"
+          ],
+          "fontSize": 14,
+          "lineHeight": 1.5
+        },
+        "heading": {
+          "fontFamily": "",
+          "fontWeights": [
+            "600"
+          ],
+          "fontSize": 14,
+          "lineHeight": 1.5
+        }
+      },
+      "notes": ""
+    }
+  },
+  "isPublic": true
+}

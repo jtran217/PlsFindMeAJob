@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
 
 interface ToastProps {
   message: string
@@ -18,10 +17,8 @@ const Toast: React.FC<ToastProps> = ({
   const [isExiting, setIsExiting] = useState(false)
 
   useEffect(() => {
-    // Start entrance animation
     const showTimer = setTimeout(() => setIsVisible(true), 10)
     
-    // Auto dismiss after duration
     const hideTimer = setTimeout(() => {
       handleClose()
     }, duration)
@@ -36,7 +33,7 @@ const Toast: React.FC<ToastProps> = ({
     setIsExiting(true)
     setTimeout(() => {
       onClose()
-    }, 300) // Match animation duration
+    }, 300)
   }
 
   const getToastStyles = () => {
