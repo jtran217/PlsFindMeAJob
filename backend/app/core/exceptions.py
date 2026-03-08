@@ -125,3 +125,91 @@ class ProfileCorruptedError(ProfileException):
         }
         super().__init__(message, "data_validation", details)
 
+
+# RxResume API Integration Exceptions
+
+class RxResumeAPIError(PlsFindMeAJobException):
+    """
+    Base exception for RxResume API errors.
+    
+    Provides structured error handling for all RxResume API interactions.
+    """
+    
+    def __init__(self, message: str, status_code: Optional[int] = None, response_data: Optional[Dict[str, Any]] = None):
+        self.status_code = status_code
+        self.response_data = response_data or {}
+        details = {
+            "status_code": status_code,
+            "response_data": response_data
+        }
+        super().__init__(message, details)
+
+
+class RxResumeAuthenticationError(RxResumeAPIError):
+    """
+    Exception raised when RxResume API authentication fails.
+    
+    Indicates invalid API key or authentication issues.
+    """
+    
+    def __init__(self, message: str = "RxResume API authentication failed", api_key_provided: bool = False):
+        self.api_key_provided = api_key_provided
+        details = {"api_key_provided": api_key_provided}
+        super().__init__(message, 401, details)
+
+
+class RxResumeValidationError(RxResumeAPIError):
+    """
+    Exception raised when RxResume API validation fails.
+    
+    Indicates data format or content validation errors on RxResume side.
+    """
+    
+    def __init__(self, message: str, validation_errors: Optional[Dict[str, Any]] = None):
+        self.validation_errors = validation_errors or {}
+        details = {"validation_errors": validation_errors}
+        super().__init__(message, 400, details)
+
+
+class RxResumeNotFoundError(RxResumeAPIError):
+    """
+    Exception raised when a resume ID is not found on RxResume.
+    
+    Indicates the resume may have been deleted or ID is incorrect.
+    """
+    
+    def __init__(self, message: str, resume_id: Optional[str] = None):
+        self.resume_id = resume_id
+        details = {"resume_id": resume_id}
+        super().__init__(message, 404, details)
+
+
+class RxResumeNetworkError(RxResumeAPIError):
+    """
+    Exception raised when network/connection issues occur with RxResume API.
+    
+    Includes timeout, connection, and other network-related errors.
+    """
+    
+    def __init__(self, message: str, error_type: str = "connection", timeout_seconds: Optional[float] = None):
+        self.error_type = error_type
+        self.timeout_seconds = timeout_seconds
+        details = {
+            "error_type": error_type,
+            "timeout_seconds": timeout_seconds
+        }
+        super().__init__(message, None, details)
+
+
+class RxResumeSlugExistsError(RxResumeAPIError):
+    """
+    Exception raised when a resume slug already exists on RxResume.
+    
+    Indicates slug conflict and need for unique slug generation.
+    """
+    
+    def __init__(self, message: str, slug: Optional[str] = None):
+        self.slug = slug
+        details = {"slug": slug}
+        super().__init__(message, 400, details)
+
