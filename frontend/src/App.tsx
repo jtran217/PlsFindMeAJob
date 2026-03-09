@@ -1,27 +1,24 @@
 import { useEffect, useMemo, useState } from 'react'
-import {useJobs} from './hooks/useJobs.ts'
-import {formatDate} from './utils/formatDate.ts'
+import { useJobs } from './hooks/useJobs'
+import { formatDate } from './utils/formatDate'
 
 type Tab = 'ready' | 'applied' | 'all'
 
 function App() {
-  const [activeTab, setActiveTab] = useState<Tab>('ready')
+  const [activeTab, setActiveTab] = useState<Tab>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const {jobs,loading,error} = useJobs();
+  const { jobs, loading, error } = useJobs()
 
-  const counts = useMemo(
-    () => ({
-      ready: jobs.filter((job) => job.status === 'ready').length,
-      applied: jobs.filter((job) => job.status === 'applied').length,
-      all: jobs.length,
-    }),
-    [jobs],
-  )
+  const counts = useMemo(() => ({
+    ready: jobs.filter((job) => job.status === 'ready').length,
+    applied: jobs.filter((job) => job.status === 'applied').length,
+    all: jobs.length,
+  }), [jobs])
 
   const filteredJobs = useMemo(() => {
     if (activeTab === 'all') return jobs
     return jobs.filter((job) => job.status === activeTab)
-  }, [activeTab])
+  }, [activeTab, jobs])
 
   useEffect(() => {
     if (!filteredJobs.length) {
@@ -37,6 +34,34 @@ function App() {
 
   const selectedJob = filteredJobs.find((job) => job.id === selectedId) ?? filteredJobs[0]
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-linear-to-br from-[#0b1021] via-[#0b1228] to-[#0a0f20] text-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+          <p className="text-slate-400">Loading jobs...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-linear-to-br from-[#0b1021] via-[#0b1228] to-[#0a0f20] text-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 mb-4">Error loading jobs</p>
+          <p className="text-slate-500 text-sm">{error}</p>
+        </div>
+      </div>
+    )
+  }
+
+  const tabs = [
+    { key: 'ready', label: 'Ready', count: counts.ready },
+    { key: 'applied', label: 'Applied', count: counts.applied },
+    { key: 'all', label: 'All Jobs', count: counts.all },
+  ]
+
   return (
     <div className="min-h-screen bg-linear-to-br from-[#0b1021] via-[#0b1228] to-[#0a0f20] text-slate-100">
       <div className="mx-auto max-w-6xl px-6 py-10 lg:px-10 lg:py-12">
@@ -51,11 +76,7 @@ function App() {
         </div>
 
         <div className="mb-6 flex gap-3 overflow-x-auto pb-2">
-          {[
-            { key: 'ready', label: 'Ready', count: counts.ready },
-            { key: 'applied', label: 'Applied', count: counts.applied },
-            { key: 'all', label: 'All Jobs', count: counts.all },
-          ].map((tab) => {
+          {tabs.map((tab) => {
             const isActive = activeTab === tab.key
             return (
               <button
@@ -106,14 +127,14 @@ function App() {
                           <p className="mt-1 text-sm text-slate-400">{job.company}</p>
                         </div>
                         <span className="rounded-full border border-slate-700 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200">
-                          {job.is_remote ? 'Remote' : job.location}
+                          {job.is_remote ? 'Remote' : (job.location || 'Location TBD')}
                         </span>
                       </div>
                       <p className="text-base font-semibold text-white">{job.title}</p>
-                      <p className="line-clamp-2 text-sm text-slate-400">{job.description}</p>
+                      <p className="line-clamp-2 text-sm text-slate-400">{job.description || 'No description available'}</p>
                       <div className="flex w-full items-center justify-between text-xs text-slate-500">
                         <span>{job.experience_range || 'N/A'}</span>
-                        <span>{formatDate(job.date_posted)}</span>
+                        <span>{formatDate(job.date_posted || '')}</span>
                       </div>
                     </button>
                   )
@@ -138,32 +159,45 @@ function App() {
                   </div>
 
                   <div className="flex flex-wrap gap-3 text-sm text-slate-300">
-                    <span className="rounded-lg border border-slate-700 bg-white/5 px-3 py-1">{selectedJob.location}</span>
-                    <span className="rounded-lg border border-slate-700 bg-white/5 px-3 py-1">{selectedJob.job_type}</span>
-                    <span className="rounded-lg border border-slate-700 bg-white/5 px-3 py-1">{selectedJob.skills}</span>
+                    {selectedJob.location && (
+                      <span className="rounded-lg border border-slate-700 bg-white/5 px-3 py-1">{selectedJob.location}</span>
+                    )}
+                    {selectedJob.job_type && (
+                      <span className="rounded-lg border border-slate-700 bg-white/5 px-3 py-1">{selectedJob.job_type}</span>
+                    )}
+                    {selectedJob.skills && (
+                      <span className="rounded-lg border border-slate-700 bg-white/5 px-3 py-1">{selectedJob.skills}</span>
+                    )}
+                    {selectedJob.is_remote && (
+                      <span className="rounded-lg border border-slate-700 bg-white/5 px-3 py-1">Remote</span>
+                    )}
                   </div>
 
                   <div className="rounded-xl border border-slate-800/70 bg-[#0c1325]/80 p-4 text-sm leading-relaxed text-slate-200 shadow-inner shadow-indigo-950/30">
-                    {selectedJob.description}
+                    {selectedJob.description || 'No description available'}
                   </div>
 
                   <div className="flex flex-wrap gap-4 text-sm text-slate-400">
-                    <a
-                      href={selectedJob.job_url_direct}
-                      className="rounded-full border border-slate-700 bg-white/5 px-4 py-2 font-semibold text-indigo-200 transition hover:border-indigo-500/70 hover:text-white"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      View posting
-                    </a>
-                    <a
-                      href={selectedJob.company_url_direct}
-                      className="rounded-full border border-slate-700 bg-white/5 px-4 py-2 font-semibold text-slate-200 transition hover:border-indigo-500/70 hover:text-white"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Company site
-                    </a>
+                    {(selectedJob.job_url_direct || selectedJob.job_url) && (
+                      <a
+                        href={selectedJob.job_url_direct || selectedJob.job_url || '#'}
+                        className="rounded-full border border-slate-700 bg-white/5 px-4 py-2 font-semibold text-indigo-200 transition hover:border-indigo-500/70 hover:text-white"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        View posting
+                      </a>
+                    )}
+                    {(selectedJob.company_url_direct || selectedJob.company_url) && (
+                      <a
+                        href={selectedJob.company_url_direct || selectedJob.company_url || '#'}
+                        className="rounded-full border border-slate-700 bg-white/5 px-4 py-2 font-semibold text-slate-200 transition hover:border-indigo-500/70 hover:text-white"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Company site
+                      </a>
+                    )}
                   </div>
                 </>
               ) : (
