@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useJobs } from './hooks/useJobs'
 import { formatDate } from './utils/formatDate'
+import { JobDescription } from './components/JobDescription'
 
 type Tab = 'ready' | 'applied' | 'all'
 
@@ -131,7 +132,6 @@ function App() {
                         </span>
                       </div>
                       <p className="text-base font-semibold text-white">{job.title}</p>
-                      <p className="line-clamp-2 text-sm text-slate-400">{job.description || 'No description available'}</p>
                       <div className="flex w-full items-center justify-between text-xs text-slate-500">
                         <span>{job.experience_range || 'N/A'}</span>
                         <span>{formatDate(job.date_posted || '')}</span>
@@ -174,7 +174,7 @@ function App() {
                   </div>
 
                   <div className="rounded-xl border border-slate-800/70 bg-[#0c1325]/80 p-4 text-sm leading-relaxed text-slate-200 shadow-inner shadow-indigo-950/30">
-                    {selectedJob.description || 'No description available'}
+                    <JobDescription content={selectedJob.description || 'No description available'} />
                   </div>
 
                   <div className="flex flex-wrap gap-4 text-sm text-slate-400">

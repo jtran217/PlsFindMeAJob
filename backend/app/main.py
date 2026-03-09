@@ -12,7 +12,8 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI(title="PlsFindMeAJob API")
 
 origins = [
-    "http://localhost:5173",  
+    "http://localhost:5173",
+    "http://localhost:5175",  
 ]
 
 app.add_middleware(
