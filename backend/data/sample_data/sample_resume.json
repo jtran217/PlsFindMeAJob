@@ -1,0 +1,160 @@
+{
+  "personal_info": {
+    "name": "Alex Johnson",
+    "phone": "(555) 123-4567",
+    "email": "alex.johnson@email.com",
+    "linkedin": "linkedin.com/in/alexjohnson",
+    "github": "github.com/alexjohnson"
+  },
+  "education": [
+    {
+      "id": "edu_001",
+      "institution": "University of Technology",
+      "location": "San Francisco, CA",
+      "degree": "Bachelor of Science in Computer Science",
+      "duration": "2015 -- 2019"
+    }
+  ],
+  "technical_skills": {
+    "languages": ["Python", "JavaScript", "TypeScript", "Java", "Go", "SQL"],
+    "frameworks": ["React", "FastAPI", "Flask", "Node.js", "Express", "Django"],
+    "developer_tools": ["Git", "Docker", "Kubernetes", "Jenkins", "AWS", "Terraform"],
+    "libraries": ["pandas", "NumPy", "Requests", "Jest", "Lodash", "Matplotlib"]
+  },
+  "experiences": [
+    {
+      "id": "exp_001",
+      "title": "Senior Software Engineer",
+      "company": "TechCorp Solutions",
+      "location": "San Francisco, CA",
+      "duration": "2022 -- Present",
+      "bullet_points": [
+        {
+          "id": "bullet_001",
+          "text": "Architected and implemented microservices platform using FastAPI, Docker, and Kubernetes, reducing deployment time by 65% and supporting 50,000+ concurrent users",
+          "keywords": [],
+          "category": "technical"
+        },
+        {
+          "id": "bullet_002",
+          "text": "Led cross-functional team of 8 engineers to migrate legacy monolith to event-driven architecture using Apache Kafka and Redis, resulting in 40% improvement in system responsiveness",
+          "keywords": [],
+          "category": "leadership"
+        },
+        {
+          "id": "bullet_003", 
+          "text": "Developed automated testing framework with Jest and Pytest, achieving 95% code coverage and reducing production bugs by 80%",
+          "keywords": [],
+          "category": "technical"
+        },
+        {
+          "id": "bullet_004",
+          "text": "Optimized database queries and implemented caching strategies with Redis, decreasing API response times from 2.1s to 180ms",
+          "keywords": [],
+          "category": "achievement"
+        }
+      ],
+      "relevance_score": 0.0
+    },
+    {
+      "id": "exp_002",
+      "title": "Software Engineer",
+      "company": "DataFlow Analytics",
+      "location": "Austin, TX",
+      "duration": "2020 -- 2022",
+      "bullet_points": [
+        {
+          "id": "bullet_005",
+          "text": "Built real-time data processing pipeline using Apache Spark and Python, handling 2M+ events per hour with 99.9% uptime",
+          "keywords": [],
+          "category": "technical"
+        },
+        {
+          "id": "bullet_006",
+          "text": "Designed and implemented RESTful APIs serving ML model predictions to 10,000+ daily active users with sub-200ms latency",
+          "keywords": [],
+          "category": "technical"
+        },
+        {
+          "id": "bullet_007",
+          "text": "Created comprehensive monitoring and alerting system using Prometheus and Grafana, reducing incident response time by 70%",
+          "keywords": [],
+          "category": "achievement"
+        }
+      ],
+      "relevance_score": 0.0
+    },
+    {
+      "id": "exp_003",
+      "title": "Junior Developer",
+      "company": "CloudFirst Technologies", 
+      "location": "Seattle, WA",
+      "duration": "2019 -- 2020",
+      "bullet_points": [
+        {
+          "id": "bullet_008",
+          "text": "Developed responsive web applications using React and TypeScript, improving user engagement metrics by 45%",
+          "keywords": [],
+          "category": "technical"
+        },
+        {
+          "id": "bullet_009",
+          "text": "Collaborated with UX team to implement accessibility features compliant with WCAG 2.1 standards, expanding user base by 15%",
+          "keywords": [],
+          "category": "collaboration"
+        }
+      ],
+      "relevance_score": 0.0
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj_001",
+      "name": "E-Commerce Analytics Platform",
+      "technologies": "React, Django, PostgreSQL, AWS",
+      "duration": "2021 -- Present",
+      "bullet_points": [
+        {
+          "id": "bullet_010",
+          "text": "Built full-stack application using React frontend and Django REST API backend, processing 500GB+ of sales data daily",
+          "keywords": [],
+          "category": "technical"
+        },
+        {
+          "id": "bullet_011",
+          "text": "Implemented machine learning recommendation engine using scikit-learn and pandas, increasing conversion rates by 28%",
+          "keywords": [],
+          "category": "achievement"
+        },
+        {
+          "id": "bullet_012",
+          "text": "Deployed on AWS using ECS, RDS, and CloudFormation with auto-scaling capabilities supporting 10,000+ concurrent sessions",
+          "keywords": [],
+          "category": "technical"
+        }
+      ],
+      "relevance_score": 0.0
+    },
+    {
+      "id": "proj_002",
+      "name": "DevOps Automation Suite",
+      "technologies": "Python, Docker, Jenkins, Terraform",
+      "duration": "2020 -- 2021",
+      "bullet_points": [
+        {
+          "id": "bullet_013",
+          "text": "Created CI/CD pipeline automation tools using Python, Docker, and Jenkins, reducing deployment cycles from 4 hours to 15 minutes",
+          "keywords": [],
+          "category": "achievement"
+        },
+        {
+          "id": "bullet_014",
+          "text": "Developed infrastructure-as-code templates with Terraform and Ansible, enabling consistent environment provisioning across 50+ services",
+          "keywords": [],
+          "category": "technical"
+        }
+      ],
+      "relevance_score": 0.0
+    }
+  ]
+}

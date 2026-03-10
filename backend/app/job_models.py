@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Integer, Text
-from app.database import Base
+from .database import Base
 
 
 class Job(Base):
@@ -18,7 +18,7 @@ class Job(Base):
     date_posted = Column(String)
     job_type = Column(String)
 
-    is_remote = Column(Integer)  # 0 or 1
+    is_remote = Column(Integer) 
 
     description = Column(Text)
 
