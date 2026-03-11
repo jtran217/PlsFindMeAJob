@@ -68,13 +68,6 @@ class ScoringService:
             
             if not job_text.strip():
                 logger.warning(f"Job {job_id} has no extractable text content")
-            return JobAnalysis(
-                job_id=job_id,
-                keywords=[],
-                technologies=[],
-                job_title=str(job.title) if job.title is not None else "",
-                company=str(job.company) if job.company is not None else ""
-            )
             
             # Extract and categorize keywords
             all_keywords = self.keyword_extractor.extract_keywords(job_text)

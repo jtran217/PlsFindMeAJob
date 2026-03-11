@@ -10,16 +10,17 @@ Main application entry point providing REST API endpoints for:
 import json
 import logging
 from pathlib import Path
-from typing import Dict, Any, Generator
+from typing import Dict, Any, Generator, List
 
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.database import SessionLocal, engine, Base
 from app.job_models import Job
-from app.models.resume import Resume, JobAnalysisResult
+from app.models.resume import Resume, JobAnalysisResult, OptimizedContent
 from app.services.resume_service import ResumeService  
 from app.services.scoring_service import ScoringService
 
@@ -184,6 +185,110 @@ async def save_resume(
             status_code=500, 
             detail="Failed to save resume data"
         )
+
+@app.put("/api/resume")
+async def update_resume(
+    resume_data: Resume,
+    resume_service: ResumeService = Depends(get_resume_service)
+):
+    """
+    Update master resume data.
+
+    Accepts a complete Resume object and overwrites the stored master resume.
+    Semantically equivalent to POST but signals an update/replace operation.
+
+    Args:
+        resume_data: Updated resume data
+
+    Returns:
+        Success confirmation message
+
+    Raises:
+        HTTPException: If update operation fails
+    """
+    try:
+        success = resume_service.save_master_resume(resume_data)
+        if success:
+            logger.info("Master resume updated successfully")
+            return {"success": True, "message": "Resume updated successfully"}
+        else:
+            logger.error("Resume update operation returned false")
+            raise HTTPException(status_code=500, detail="Failed to update resume")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating resume: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to update resume data"
+        )
+
+
+class OptimizeResumeRequest(BaseModel):
+    """Request body for resume optimization endpoint."""
+    selected_experiences: List[str]
+    selected_projects: List[str]
+
+
+@app.post("/api/resume/optimize/{job_id}")
+async def optimize_resume_for_job(
+    job_id: str,
+    request: OptimizeResumeRequest,
+):
+    """
+    Optimize selected resume items for a specific job using AI.
+
+    Sends selected experiences and projects along with the job description
+    to an AI service (OpenRouter) for terminology alignment and quantification.
+
+    Args:
+        job_id: Unique identifier for target job
+        request: Selected experience and project IDs to optimize
+
+    Returns:
+        Optimized bullet points for review and editing
+
+    Raises:
+        HTTPException: 501 until OptimizationService is implemented in Phase 1.3
+    """
+    logger.info(
+        f"Optimization requested for job {job_id} — "
+        f"{len(request.selected_experiences)} experiences, "
+        f"{len(request.selected_projects)} projects"
+    )
+    raise HTTPException(
+        status_code=501,
+        detail="Resume optimization is not yet implemented. OptimizationService will be added in Phase 1.3."
+    )
+
+
+@app.post("/api/resume/generate-pdf/{job_id}")
+async def generate_resume_pdf(
+    job_id: str,
+    finalized_content: OptimizedContent,
+):
+    """
+    Generate a LaTeX PDF resume for a specific job.
+
+    Combines the master resume data with finalized optimized content
+    and compiles a professional PDF using a LaTeX template.
+
+    Args:
+        job_id: Unique identifier for target job
+        finalized_content: Reviewed and approved optimized bullet points
+
+    Returns:
+        File path or download URL for the generated PDF
+
+    Raises:
+        HTTPException: 501 until PDFService is implemented in Phase 1.5
+    """
+    logger.info(f"PDF generation requested for job {job_id}")
+    raise HTTPException(
+        status_code=501,
+        detail="PDF generation is not yet implemented. PDFService will be added in Phase 1.5."
+    )
+
 
 @app.post("/api/resume/analyze/{job_id}", response_model=JobAnalysisResult)
 async def analyze_job_for_resume(
