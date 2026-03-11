@@ -12,6 +12,11 @@ import logging
 from pathlib import Path
 from typing import Dict, Any, Generator, List
 
+from dotenv import load_dotenv
+
+# Load environment variables from project root .env before any service imports
+load_dotenv(dotenv_path=Path(__file__).parent.parent.parent.parent / ".env")
+
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -20,9 +25,10 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.database import SessionLocal, engine, Base
 from app.job_models import Job
-from app.models.resume import Resume, JobAnalysisResult, OptimizedContent
+from app.models.resume import Resume, JobAnalysisResult, OptimizedContent, OptimizedResume
 from app.services.resume_service import ResumeService  
 from app.services.scoring_service import ScoringService
+from app.services.optimization_service import OptimizationService
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -89,6 +95,26 @@ def get_scoring_service(db: Session = Depends(get_db)) -> ScoringService:
         Configured ScoringService instance
     """
     return ScoringService(db)
+
+
+def get_optimization_service() -> OptimizationService:
+    """
+    Optimization service dependency injection.
+
+    Returns:
+        Configured OptimizationService instance
+
+    Raises:
+        HTTPException: If OPENROUTER_API_KEY is not configured
+    """
+    try:
+        return OptimizationService()
+    except EnvironmentError as e:
+        logger.error(f"OptimizationService configuration error: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="AI optimization service is not configured. OPENROUTER_API_KEY is missing."
+        )
 
 
 # API Endpoints
@@ -230,36 +256,104 @@ class OptimizeResumeRequest(BaseModel):
     selected_projects: List[str]
 
 
-@app.post("/api/resume/optimize/{job_id}")
+@app.post("/api/resume/optimize/{job_id}", response_model=OptimizedContent)
 async def optimize_resume_for_job(
     job_id: str,
     request: OptimizeResumeRequest,
+    resume_service: ResumeService = Depends(get_resume_service),
+    scoring_service: ScoringService = Depends(get_scoring_service),
+    optimization_service: OptimizationService = Depends(get_optimization_service),
 ):
     """
     Optimize selected resume items for a specific job using AI.
 
-    Sends selected experiences and projects along with the job description
-    to an AI service (OpenRouter) for terminology alignment and quantification.
+    Loads the master resume and the target job, filters down to the selected
+    experiences and projects, then sends each item's bullet points to
+    OpenRouter in a single concurrent batch call per item. Results are saved
+    as a resume version and returned for user review and editing.
+
+    Uses per-item batching strategy: one API call per selected experience or
+    project (~5 calls for a typical selection vs. ~18 for per-bullet),
+    costing approximately $0.010 per optimization run with claude-3.5-haiku.
+
+    On API failure for any individual item, that item falls back to its
+    original bullet text so the user always receives a complete response.
 
     Args:
         job_id: Unique identifier for target job
         request: Selected experience and project IDs to optimize
 
     Returns:
-        Optimized bullet points for review and editing
+        OptimizedContent with AI-enhanced bullet points for review
 
     Raises:
-        HTTPException: 501 until OptimizationService is implemented in Phase 1.3
+        HTTPException: 404 if job not found, 500 if optimization fails
     """
-    logger.info(
-        f"Optimization requested for job {job_id} — "
-        f"{len(request.selected_experiences)} experiences, "
-        f"{len(request.selected_projects)} projects"
-    )
-    raise HTTPException(
-        status_code=501,
-        detail="Resume optimization is not yet implemented. OptimizationService will be added in Phase 1.3."
-    )
+    try:
+        logger.info(
+            f"Optimization requested for job {job_id} — "
+            f"{len(request.selected_experiences)} experiences, "
+            f"{len(request.selected_projects)} projects"
+        )
+
+        # Load master resume
+        resume = resume_service.load_master_resume()
+
+        # Fetch job from DB for description, title, company
+        job_analysis = scoring_service.extract_job_requirements(job_id)
+        job = scoring_service.db.query(Job).filter(Job.id == job_id).first()
+        job_description = str(job.description or "") if job else ""
+
+        # Filter resume items to only the selected IDs
+        exp_id_set = set(request.selected_experiences)
+        proj_id_set = set(request.selected_projects)
+
+        selected_experiences = [
+            exp for exp in resume.experiences if exp.id in exp_id_set
+        ]
+        selected_projects = [
+            proj for proj in resume.projects if proj.id in proj_id_set
+        ]
+
+        if not selected_experiences and not selected_projects:
+            raise HTTPException(
+                status_code=400,
+                detail="None of the provided experience or project IDs were found in the master resume."
+            )
+
+        # Run optimization (per-item batching, concurrent)
+        optimized_content = await optimization_service.optimize_resume_items(
+            selected_experiences=selected_experiences,
+            selected_projects=selected_projects,
+            job_description=job_description,
+            job_title=job_analysis.job_title,
+            company=job_analysis.company,
+        )
+
+        # Persist as a resume version
+        resume_version = OptimizedResume(
+            job_id=job_id,
+            generated_at="",  # resume_service stamps this on save
+            selected_experiences=request.selected_experiences,
+            selected_projects=request.selected_projects,
+            optimized_content=optimized_content,
+        )
+        resume_service.save_resume_version(job_id, resume_version)
+
+        logger.info(f"Optimization complete and saved for job {job_id}")
+        return optimized_content
+
+    except HTTPException:
+        raise
+    except ValueError as e:
+        logger.warning(f"Job not found during optimization: {job_id}")
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Optimization failed for job {job_id}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Resume optimization failed. Please try again."
+        )
 
 
 @app.post("/api/resume/generate-pdf/{job_id}")

@@ -136,7 +136,7 @@ Building a standalone resume optimization system integrated with the existing jo
 }
 ```
 
-## 1.2 API Endpoints
+## 1.2 API Endpoints (DONE)
 
 ### Extend `backend/app/main.py`:
 ```python
@@ -189,7 +189,7 @@ async def get_resume_version(job_id: str):
     """Get specific job resume version"""
 ```
 
-## 1.3 Services to Create
+## 1.3 Services to Create (DONE)
 
 ### `backend/app/services/resume_service.py`:
 ```python
@@ -234,15 +234,21 @@ class OptimizationService:
     def __init__(self, openrouter_api_key: str):
         self.api_key = openrouter_api_key
     
-    async def optimize_bullet_points(
-        bullet_points: List[str],
+    async def optimize_resume_items(
+        selected_experiences: List[Experience],
+        selected_projects: List[Project],
         job_description: str,
         job_title: str,
         company: str
-    ) -> List[OptimizedBullet]:
+    ) -> OptimizedContent:
         """
-        OpenRouter integration for optimization
-        Focus on terminology alignment + quantification
+        Per-item batching strategy: one API call per experience/project.
+        All bullet points for an item are sent in a single prompt and
+        returned as a structured JSON array. Calls are fired concurrently
+        via asyncio.gather (~5 calls vs ~18 for per-bullet approach).
+        
+        Cost: ~$0.010 per full optimization run with claude-3.5-haiku.
+        On failure for any item: falls back to original bullet text.
         """
 ```
 
@@ -531,8 +537,25 @@ const ContentSelector = ({
 ```env
 # Add to .env
 OPENROUTER_API_KEY=your_api_key_here
-OPENROUTER_MODEL=anthropic/claude-3-sonnet  # or preferred model
+OPENROUTER_MODEL=anthropic/claude-3.5-haiku
+OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
+OPENROUTER_MAX_TOKENS=4096
+OPENROUTER_TIMEOUT=30
 ```
+
+### Batching Strategy Decision:
+**Per-item batching** was chosen over per-bullet calls after a cost/architecture analysis:
+
+| Strategy | API Calls | Est. Cost/Run | Notes |
+|---|---|---|---|
+| Per-bullet | ~18 | ~$0.016 | Max flexibility, highest call count |
+| **Per-item batch** | **~5** | **~$0.010** | Best balance — chosen approach |
+| Single call | 1 | ~$0.005 | Cheapest, hardest to parse/regenerate |
+
+Per-item batching sends all bullet points for one experience/project in a single
+prompt requesting a structured JSON array response `[{bullet_id, optimized_text}]`.
+Calls are fired concurrently via `asyncio.gather`. This preserves per-bullet
+regeneration capability in the review UI while reducing API calls ~3.5×.
 
 ### Service Configuration:
 ```python
