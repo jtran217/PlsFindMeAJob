@@ -2,10 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { useJobs } from './hooks/useJobs'
 import { formatDate } from './utils/formatDate'
 import { JobDescription } from './components/JobDescription'
+import { ResumeBuilder } from './components/resume/ResumeBuilder'
 
 type Tab = 'ready' | 'applied' | 'all'
+type View = 'jobs' | 'resume'
 
 function App() {
+  const [currentView, setCurrentView] = useState<View>('jobs')
   const [activeTab, setActiveTab] = useState<Tab>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const { jobs, loading, error } = useJobs()
@@ -67,15 +70,45 @@ function App() {
     <div className="min-h-screen bg-linear-to-br from-[#0b1021] via-[#0b1228] to-[#0a0f20] text-slate-100">
       <div className="mx-auto max-w-6xl px-6 py-10 lg:px-10 lg:py-12">
         <div className="mb-8 flex items-center justify-between">
-          <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Dashboard</p>
-            <h1 className="mt-2 text-3xl font-semibold text-white">Job Applications</h1>
+          <div className="flex items-center gap-8">
+            <div>
+              <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Dashboard</p>
+              <h1 className="mt-2 text-3xl font-semibold text-white">PlsFindMeAJob</h1>
+            </div>
+
+            <nav className="flex gap-2">
+              <button
+                onClick={() => setCurrentView('jobs')}
+                className={`rounded-xl border px-4 py-2 text-sm font-medium transition ${
+                  currentView === 'jobs'
+                    ? 'border-indigo-500/70 bg-indigo-500/15 text-white shadow-[0_10px_40px_rgba(79,70,229,0.3)]'
+                    : 'border-slate-800 bg-white/5 text-slate-400 hover:border-slate-600 hover:text-white'
+                }`}
+              >
+                Job Dashboard
+              </button>
+              <button
+                onClick={() => setCurrentView('resume')}
+                className={`rounded-xl border px-4 py-2 text-sm font-medium transition ${
+                  currentView === 'resume'
+                    ? 'border-indigo-500/70 bg-indigo-500/15 text-white shadow-[0_10px_40px_rgba(79,70,229,0.3)]'
+                    : 'border-slate-800 bg-white/5 text-slate-400 hover:border-slate-600 hover:text-white'
+                }`}
+              >
+                Resume Builder
+              </button>
+            </nav>
           </div>
+
           <div className="rounded-full border border-slate-800 bg-white/5 px-4 py-2 text-sm text-slate-300 shadow-sm shadow-indigo-950/40">
             {counts.all} total roles
           </div>
         </div>
 
+        {currentView === 'resume' ? (
+          <ResumeBuilder />
+        ) : (
+          <>
         <div className="mb-6 flex gap-3 overflow-x-auto pb-2">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.key
@@ -208,6 +241,8 @@ function App() {
             </div>
           </section>
         </div>
+          </>
+        )}
       </div>
     </div>
   )
