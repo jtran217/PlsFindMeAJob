@@ -47,6 +47,22 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# ---------------------------------------------------------------------------
+# Application startup: initialize singleton services that hold long-lived
+# resources (e.g. httpx.AsyncClient inside AsyncOpenAI). Using app.state
+# avoids creating and discarding a new client on every request.
+# ---------------------------------------------------------------------------
+
+@app.on_event("startup")
+def _startup() -> None:
+    """Initialise singleton services and attach them to app.state."""
+    try:
+        app.state.optimization_service = OptimizationService()
+        logger.info("OptimizationService initialised successfully.")
+    except EnvironmentError as e:
+        logger.error(f"OptimizationService could not be initialised: {e}")
+        app.state.optimization_service = None
+
 # CORS configuration
 ALLOWED_ORIGINS = [
     "http://localhost:5173",
@@ -86,19 +102,22 @@ def get_scoring_service(db: Session = Depends(get_db)) -> ScoringService:
 
 def get_optimization_service() -> OptimizationService:
     """
-    Optimization service dependency injection.
+    Return the singleton OptimizationService from app.state.
+
+    The service is initialised once at startup so the underlying
+    AsyncOpenAI (httpx) client is reused across requests rather than
+    being created and discarded on every call.
 
     Raises:
-        HTTPException: If OPENROUTER_API_KEY is not configured.
+        HTTPException: If OPENROUTER_API_KEY was not configured at startup.
     """
-    try:
-        return OptimizationService()
-    except EnvironmentError as e:
-        logger.error(f"OptimizationService configuration error: {e}")
+    svc = getattr(app.state, "optimization_service", None)
+    if svc is None:
         raise HTTPException(
             status_code=500,
             detail="AI optimization service is not configured. OPENROUTER_API_KEY is missing."
         )
+    return svc
 
 
 def get_pdf_service() -> PDFService:
@@ -229,9 +248,17 @@ async def optimize_resume_for_job(
         )
 
         resume = resume_service.load_master_resume()
-        job_analysis = scoring_service.extract_job_requirements(job_id)
-        job = scoring_service.db.query(Job).filter(Job.id == job_id).first()
-        job_description = str(job.description or "") if job else ""
+
+        # extract_job_requirements raises ValueError if the job doesn't exist.
+        # Catch it here before we ever reach the AI service, so a missing-job
+        # error returns 404 and an AI-level ValueError returns 500.
+        try:
+            job_analysis = scoring_service.extract_job_requirements(job_id)
+        except ValueError as e:
+            logger.warning(f"Job not found during optimization: {job_id}")
+            raise HTTPException(status_code=404, detail=str(e))
+
+        job_description = job_analysis.job_description
 
         exp_id_set = set(request.selected_experiences)
         proj_id_set = set(request.selected_projects)
@@ -267,9 +294,6 @@ async def optimize_resume_for_job(
 
     except HTTPException:
         raise
-    except ValueError as e:
-        logger.warning(f"Job not found during optimization: {job_id}")
-        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         logger.error(f"Optimization failed for job {job_id}: {e}")
         raise HTTPException(status_code=500, detail="Resume optimization failed. Please try again.")

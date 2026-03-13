@@ -1,11 +1,10 @@
 import { useState } from 'react'
-import type { Resume, OptimizedContent, JobAnalysisResult, OptimizedBullet } from '../../../types/Resume'
+import type { Resume, OptimizedContent, OptimizedBullet } from '../../../types/Resume'
 import type { Job } from '../../../types/Job'
 
 interface OptimizationReviewProps {
   resume: Resume
   optimizedContent: OptimizedContent
-  analysisResult: JobAnalysisResult
   selectedExperienceIds: string[]
   selectedProjectIds: string[]
   selectedJob: Job | null
@@ -77,8 +76,9 @@ function BulletRow({
   onRevert: () => void
   onToggleEdit: () => void
 }) {
-  const isChanged = state.text !== bullet.optimized
-  const hasEdits = state.text !== bullet.original
+  // True when the user has manually edited the AI-generated text.
+  // Used to show the "Edited" label and the "↺ Revert to AI" button.
+  const hasEdits = state.text !== bullet.optimized
 
   return (
     <div className={`rounded-xl border p-4 transition ${state.accepted ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-slate-800/70 bg-white/5'}`}>
@@ -148,7 +148,7 @@ function BulletRow({
             )}
           </>
         )}
-        {isChanged && !state.editing && (
+        {hasEdits && !state.editing && (
           <span className="ml-auto text-xs text-amber-400/70 italic">Edited</span>
         )}
       </div>

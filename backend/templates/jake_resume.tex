@@ -2,9 +2,9 @@
 % Jake's Resume Template (Jinja2 version)
 % Adapted for dynamic rendering via Jinja2 + pdflatex
 %
-% IMPORTANT: Jinja2 is configured with block_start_string='<@',
-%            block_end_string='@>', variable_start_string='<<',
-%            variable_end_string='>>' to avoid conflicts with LaTeX braces.
+% IMPORTANT: Jinja2 uses custom delimiters to avoid conflicts with LaTeX braces.
+%            Blocks use  <at-sign>  ...  at-sign>  syntax.
+%            Variables use double-angle-bracket syntax.
 %-------------------------
 
 \documentclass[letterpaper,11pt]{article}

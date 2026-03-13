@@ -27,6 +27,9 @@ export function useOptimization(): UseOptimizationReturn {
   const analyzeJob = useCallback(async (jobId: string): Promise<JobAnalysisResult | null> => {
     setAnalyzing(true)
     setError(null)
+    // Clear any stale optimized content from a previous job so consumers never
+    // see Job A's content while analyzing Job B.
+    setOptimizedContent(null)
     try {
       const response = await fetch(`/api/resume/analyze/${jobId}`, {
         method: 'POST',

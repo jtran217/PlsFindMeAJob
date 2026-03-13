@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import List, Dict, TYPE_CHECKING
 from uuid import uuid4
 
-from pydantic import BaseModel, Field, computed_field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 if TYPE_CHECKING:
     from app.services.keyword_extraction import KeywordExtractor
@@ -59,6 +59,8 @@ class BulletPoint(BaseModel):
     Keywords and category are automatically extracted from the text
     when the bullet point is created or when text is updated.
     """
+    model_config = ConfigDict(validate_assignment=True)
+
     id: str = Field(default_factory=lambda: str(uuid4()))
     text: str
     keywords: List[str] = Field(default_factory=list)
@@ -72,10 +74,6 @@ class BulletPoint(BaseModel):
             self.keywords = extractor.extract_keywords(self.text)
             self.category = extractor.categorize_content(self.text, self.keywords)
         return self
-    
-    class Config:
-        """Pydantic configuration."""
-        validate_assignment = True
 
 
 class Experience(BaseModel):
@@ -88,10 +86,15 @@ class Experience(BaseModel):
     bullet_points: List[BulletPoint] = Field(default_factory=list)
     relevance_score: float = Field(default=0.0, ge=0.0, le=1.0)
     
-    @computed_field
     @property
     def overall_keywords(self) -> List[str]:
-        """Aggregate keywords from all bullet points, deduplicated and sorted."""
+        """Aggregate keywords from all bullet points, deduplicated and sorted.
+        
+        Kept as a plain property (not @computed_field) to prevent Pydantic from
+        serializing it into JSON. Serializing a computed field causes a
+        ValidationError on reload because computed fields cannot be set from
+        input data.
+        """
         all_keywords = []
         for bullet in self.bullet_points:
             all_keywords.extend(bullet.keywords)
@@ -107,10 +110,15 @@ class Project(BaseModel):
     bullet_points: List[BulletPoint] = Field(default_factory=list)
     relevance_score: float = Field(default=0.0, ge=0.0, le=1.0)
     
-    @computed_field
     @property
     def overall_keywords(self) -> List[str]:
-        """Aggregate keywords from all bullet points, deduplicated and sorted."""
+        """Aggregate keywords from all bullet points, deduplicated and sorted.
+        
+        Kept as a plain property (not @computed_field) to prevent Pydantic from
+        serializing it into JSON. Serializing a computed field causes a
+        ValidationError on reload because computed fields cannot be set from
+        input data.
+        """
         all_keywords = []
         for bullet in self.bullet_points:
             all_keywords.extend(bullet.keywords)
@@ -167,6 +175,7 @@ class JobAnalysis(BaseModel):
     technologies: List[str] = Field(default_factory=list)
     job_title: str = ""
     company: str = ""
+    job_description: str = ""
 
 
 class JobAnalysisResult(BaseModel):

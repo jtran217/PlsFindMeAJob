@@ -81,7 +81,8 @@ class ScoringService:
                 keywords=general_keywords,
                 technologies=list(technologies),
                 job_title=str(job.title) if job.title is not None else "",
-                company=str(job.company) if job.company is not None else ""
+                company=str(job.company) if job.company is not None else "",
+                job_description=str(job.description) if job.description is not None else "",
             )
             
         except SQLAlchemyError as e:

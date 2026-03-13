@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useOptimization } from '../../../hooks/useOptimization'
 import type { Job } from '../../../types/Job'
 import type { JobAnalysisResult, OptimizedContent, Resume } from '../../../types/Resume'
@@ -28,8 +28,14 @@ export function JobOptimizer({ hasResume, resume, jobs, initialJobId, onInitialJ
 
   const { analyzeJob, optimizeResume, analyzing, optimizing, error, clearError } = useOptimization()
 
+  // Guard against React StrictMode double-invoking the effect (fires the effect
+  // twice on mount in dev). Without this, two concurrent analyzeJob calls fire
+  // for the same initialJobId.
+  const initialJobConsumed = useRef(false)
+
   const handleJobSelect = useCallback(async (jobId: string) => {
     setSelectedJobId(jobId)
+    setAnalysisResult(null)  // clear stale result from a previous job before awaiting
     clearError()
     const result = await analyzeJob(jobId)
     if (result) {
@@ -40,7 +46,8 @@ export function JobOptimizer({ hasResume, resume, jobs, initialJobId, onInitialJ
 
   // Auto-trigger job analysis when a job id is provided via deep-link from Job Dashboard
   useEffect(() => {
-    if (!initialJobId || !hasResume || !resume) return
+    if (!initialJobId || !hasResume || !resume || initialJobConsumed.current) return
+    initialJobConsumed.current = true
     onInitialJobConsumed?.()
     handleJobSelect(initialJobId)
   // handleJobSelect is stable (useCallback); initialJobId is the only real trigger
@@ -177,11 +184,10 @@ export function JobOptimizer({ hasResume, resume, jobs, initialJobId, onInitialJ
         )}
 
         {/* Step 3 — Review */}
-        {step === 'review' && optimizedContent && resume && analysisResult && (
+        {step === 'review' && optimizedContent && resume && (
           <OptimizationReview
             resume={resume}
             optimizedContent={optimizedContent}
-            analysisResult={analysisResult}
             selectedExperienceIds={selectedExperiences}
             selectedProjectIds={selectedProjects}
             selectedJob={selectedJob ?? null}
@@ -191,17 +197,31 @@ export function JobOptimizer({ hasResume, resume, jobs, initialJobId, onInitialJ
         )}
 
         {/* Step 4 — PDF */}
-        {step === 'pdf' && optimizedContent && selectedJob && (
-          <PDFPreview
-            jobId={selectedJob.id}
-            jobTitle={selectedJob.title ?? ''}
-            company={selectedJob.company ?? ''}
-            optimizedContent={optimizedContent}
-            selectedExperienceIds={selectedExperiences}
-            selectedProjectIds={selectedProjects}
-            onBack={() => setStep('review')}
-            onStartOver={handleReset}
-          />
+        {step === 'pdf' && optimizedContent && (
+          selectedJob ? (
+            <PDFPreview
+              jobId={selectedJob.id}
+              jobTitle={selectedJob.title ?? ''}
+              company={selectedJob.company ?? ''}
+              optimizedContent={optimizedContent}
+              selectedExperienceIds={selectedExperiences}
+              selectedProjectIds={selectedProjects}
+              onBack={() => setStep('review')}
+              onStartOver={handleReset}
+            />
+          ) : (
+            <div className="rounded-xl border border-red-900/40 bg-red-900/10 px-4 py-3">
+              <p className="text-sm text-red-400">
+                Job details could not be found. The job may have been removed.
+              </p>
+              <button
+                onClick={handleReset}
+                className="mt-2 text-xs text-slate-400 hover:text-slate-200 transition"
+              >
+                ← Start over
+              </button>
+            </div>
+          )
         )}
       </div>
     </div>

@@ -44,8 +44,10 @@ export interface Experience {
   location: string
   duration: string
   bullet_points: BulletPoint[]
-  /** Aggregated and deduplicated keywords from all bullet points (server-computed). */
-  overall_keywords: readonly string[]
+  /** Aggregated and deduplicated keywords from all bullet points.
+   *  Only present on objects created locally before save; not returned by the API
+   *  (the backend computes this as a plain property, not a serialized field). */
+  overall_keywords?: readonly string[]
   relevance_score: number
 }
 
@@ -55,8 +57,10 @@ export interface Project {
   technologies: string
   duration: string
   bullet_points: BulletPoint[]
-  /** Aggregated and deduplicated keywords from all bullet points (server-computed). */
-  overall_keywords: readonly string[]
+  /** Aggregated and deduplicated keywords from all bullet points.
+   *  Only present on objects created locally before save; not returned by the API
+   *  (the backend computes this as a plain property, not a serialized field). */
+  overall_keywords?: readonly string[]
   relevance_score: number
 }
 

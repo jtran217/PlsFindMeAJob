@@ -75,7 +75,9 @@ function ItemCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <p className="text-sm font-semibold text-white leading-tight">{title || <em className="text-slate-500">Untitled</em>}</p>
+              <p className="text-sm font-semibold text-white leading-tight">
+                {title || <em className="text-slate-500">Untitled</em>}
+              </p>
               <p className="text-xs text-slate-400">{subtitle}</p>
             </div>
             <ScoreBadge score={score} />
@@ -106,6 +108,72 @@ function ItemCard({
   )
 }
 
+function SelectionColumn({
+  label,
+  selectedItems,
+  availableItems,
+  onToggle,
+  atMax,
+  renderTitle,
+  renderSubtitle,
+}: {
+  label: string
+  selectedItems: Array<Experience | Project>
+  availableItems: Array<Experience | Project>
+  onToggle: (id: string) => void
+  atMax: boolean
+  renderTitle: (item: Experience | Project) => string
+  renderSubtitle: (item: Experience | Project) => string
+}) {
+  const totalCount = selectedItems.length + availableItems.length
+  if (totalCount === 0) return null
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-medium uppercase tracking-[0.15em] text-slate-400">{label}</p>
+        <span className="text-xs text-slate-500">{selectedItems.length} selected</span>
+      </div>
+
+      {selectedItems.length > 0 && (
+        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-2.5 space-y-2">
+          <p className="text-xs font-medium text-emerald-500/70 px-1">Auto-Selected ({selectedItems.length})</p>
+          {selectedItems.map((item) => (
+            <ItemCard
+              key={item.id}
+              title={renderTitle(item)}
+              subtitle={renderSubtitle(item)}
+              bullets={'bullet_points' in item ? item.bullet_points.slice(0, 3).map((b) => b.text) : []}
+              score={item.relevance_score}
+              selected={true}
+              onToggle={() => onToggle(item.id)}
+              disabled={false}
+            />
+          ))}
+        </div>
+      )}
+
+      {availableItems.length > 0 && (
+        <div className="rounded-xl border border-slate-800/50 bg-white/[0.02] p-2.5 space-y-2">
+          <p className="text-xs font-medium text-slate-600 px-1">Available</p>
+          {availableItems.map((item) => (
+            <ItemCard
+              key={item.id}
+              title={renderTitle(item)}
+              subtitle={renderSubtitle(item)}
+              bullets={'bullet_points' in item ? item.bullet_points.slice(0, 3).map((b) => b.text) : []}
+              score={item.relevance_score}
+              selected={false}
+              onToggle={() => onToggle(item.id)}
+              disabled={atMax}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function ContentSelector({
   analysisResult,
   resume: _resume,
@@ -113,11 +181,9 @@ export function ContentSelector({
   onConfirm,
   optimizing,
 }: ContentSelectorProps) {
-  // Use ranked lists from analysis (they carry relevance_score)
   const rankedExperiences: Experience[] = analysisResult.ranked_experiences
   const rankedProjects: Project[] = analysisResult.ranked_projects
 
-  // Auto-select top 5 across both categories, prioritizing by score
   const initialSelected = useMemo(() => {
     const all = [
       ...rankedExperiences.map((e) => ({ id: e.id, type: 'exp' as const, score: e.relevance_score })),
@@ -164,13 +230,22 @@ export function ContentSelector({
 
   const { job_analysis } = analysisResult
 
+  const selectedExps = rankedExperiences.filter((e) => selectedExpIds.has(e.id))
+  const availableExps = rankedExperiences.filter((e) => !selectedExpIds.has(e.id))
+  const selectedProjs = rankedProjects.filter((p) => selectedProjIds.has(p.id))
+  const availableProjs = rankedProjects.filter((p) => !selectedProjIds.has(p.id))
+
+  const hasContent = rankedExperiences.length > 0 || rankedProjects.length > 0
+
   return (
     <div className="space-y-5">
       {/* Job context banner */}
       <div className="rounded-xl border border-slate-800/70 bg-white/5 px-4 py-3">
         <p className="text-sm font-semibold text-white">
           {selectedJob?.title ?? job_analysis.job_title}
-          {(selectedJob?.company ?? job_analysis.company) ? ` @ ${selectedJob?.company ?? job_analysis.company}` : ''}
+          {(selectedJob?.company ?? job_analysis.company)
+            ? ` @ ${selectedJob?.company ?? job_analysis.company}`
+            : ''}
         </p>
         <div className="mt-2 flex flex-wrap gap-2">
           {job_analysis.technologies.slice(0, 8).map((t) => (
@@ -186,16 +261,13 @@ export function ContentSelector({
         </div>
       </div>
 
-      {/* Selection counter */}
+      {/* Selection counter + reset */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-slate-400">
           <span className={`font-semibold ${atMax ? 'text-amber-400' : 'text-white'}`}>{totalSelected}</span>
           <span> / {MAX_SELECTIONS} items selected</span>
         </p>
-        <button
-          onClick={handleReset}
-          className="text-xs text-slate-500 transition hover:text-slate-300"
-        >
+        <button onClick={handleReset} className="text-xs text-slate-500 transition hover:text-slate-300">
           Reset to auto-selection
         </button>
       </div>
@@ -206,53 +278,31 @@ export function ContentSelector({
         </p>
       )}
 
-      {/* Experiences */}
-      {rankedExperiences.length > 0 && (
-        <div>
-          <p className="mb-2 text-xs font-medium uppercase tracking-[0.15em] text-slate-400">
-            Work Experience
-          </p>
-          <div className="space-y-2">
-            {rankedExperiences.map((exp) => (
-              <ItemCard
-                key={exp.id}
-                title={exp.title}
-                subtitle={[exp.company, exp.location].filter(Boolean).join(' · ')}
-                bullets={exp.bullet_points.slice(0, 3).map((b) => b.text)}
-                score={exp.relevance_score}
-                selected={selectedExpIds.has(exp.id)}
-                onToggle={() => toggleExp(exp.id)}
-                disabled={atMax && !selectedExpIds.has(exp.id)}
-              />
-            ))}
-          </div>
+      {/* Two-column layout */}
+      {hasContent ? (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <SelectionColumn
+            label="Work Experience"
+            selectedItems={selectedExps}
+            availableItems={availableExps}
+            onToggle={toggleExp}
+            atMax={atMax}
+            renderTitle={(item) => ('title' in item ? item.title : '')}
+            renderSubtitle={(item) =>
+              'company' in item ? [item.company, item.location].filter(Boolean).join(' · ') : ''
+            }
+          />
+          <SelectionColumn
+            label="Projects"
+            selectedItems={selectedProjs}
+            availableItems={availableProjs}
+            onToggle={toggleProj}
+            atMax={atMax}
+            renderTitle={(item) => ('name' in item ? item.name : '')}
+            renderSubtitle={(item) => ('technologies' in item ? item.technologies : '')}
+          />
         </div>
-      )}
-
-      {/* Projects */}
-      {rankedProjects.length > 0 && (
-        <div>
-          <p className="mb-2 text-xs font-medium uppercase tracking-[0.15em] text-slate-400">
-            Projects
-          </p>
-          <div className="space-y-2">
-            {rankedProjects.map((proj) => (
-              <ItemCard
-                key={proj.id}
-                title={proj.name}
-                subtitle={proj.technologies}
-                bullets={proj.bullet_points.slice(0, 3).map((b) => b.text)}
-                score={proj.relevance_score}
-                selected={selectedProjIds.has(proj.id)}
-                onToggle={() => toggleProj(proj.id)}
-                disabled={atMax && !selectedProjIds.has(proj.id)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {rankedExperiences.length === 0 && rankedProjects.length === 0 && (
+      ) : (
         <p className="text-sm italic text-slate-600">
           No experiences or projects in your resume yet. Add some in the sections above.
         </p>
