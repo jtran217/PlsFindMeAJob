@@ -9,6 +9,7 @@ type View = 'jobs' | 'resume'
 
 function App() {
   const [currentView, setCurrentView] = useState<View>('jobs')
+  const [pendingOptimizeJobId, setPendingOptimizeJobId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const { jobs, loading, error } = useJobs()
@@ -106,7 +107,7 @@ function App() {
         </div>
 
         {currentView === 'resume' ? (
-          <ResumeBuilder jobs={jobs} />
+          <ResumeBuilder jobs={jobs} initialOptimizeJobId={pendingOptimizeJobId ?? undefined} onOptimizeJobConsumed={() => setPendingOptimizeJobId(null)} />
         ) : (
           <>
           <div className="mb-6 flex gap-3 overflow-x-auto pb-2">
@@ -187,7 +188,7 @@ function App() {
                         <p className="text-sm text-slate-400">{selectedJob.company}</p>
                       </div>
                       <button
-                        onClick={() => setCurrentView('resume')}
+                        onClick={() => { setPendingOptimizeJobId(selectedJob?.id ?? null); setCurrentView('resume') }}
                         className="flex items-center gap-2 rounded-full bg-linear-to-r from-indigo-500 via-purple-500 to-fuchsia-500 px-5 py-2 text-sm font-semibold text-white shadow-[0_15px_45px_-10px_rgba(79,70,229,0.5)] transition hover:shadow-[0_20px_55px_-12px_rgba(79,70,229,0.65)]"
                       >
                         Generate Resume

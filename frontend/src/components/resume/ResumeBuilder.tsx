@@ -25,9 +25,11 @@ interface ResumeBuilderProps {
   jobs?: Job[]
   /** If set, immediately open the optimizer for this job ID */
   initialOptimizeJobId?: string
+  /** Called once after initialOptimizeJobId has been consumed, so App can clear it */
+  onOptimizeJobConsumed?: () => void
 }
 
-export function ResumeBuilder({ jobs = [], initialOptimizeJobId: _initialOptimizeJobId }: ResumeBuilderProps) {
+export function ResumeBuilder({ jobs = [], initialOptimizeJobId, onOptimizeJobConsumed }: ResumeBuilderProps) {
   const { resume, loading, saving, error, loadResume, saveResume, clearError } = useResume()
 
   const [localResume, setLocalResume] = useState<Resume | null>(null)
@@ -236,6 +238,8 @@ export function ResumeBuilder({ jobs = [], initialOptimizeJobId: _initialOptimiz
           hasResume={Boolean(localResume)}
           resume={localResume}
           jobs={jobs}
+          initialJobId={initialOptimizeJobId}
+          onInitialJobConsumed={onOptimizeJobConsumed}
         />
       </div>
 

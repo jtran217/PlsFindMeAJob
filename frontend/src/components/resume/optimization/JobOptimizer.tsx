@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useOptimization } from '../../../hooks/useOptimization'
 import type { Job } from '../../../types/Job'
 import type { JobAnalysisResult, OptimizedContent, Resume } from '../../../types/Resume'
@@ -12,9 +12,13 @@ interface JobOptimizerProps {
   hasResume: boolean
   resume: Resume | null
   jobs: Job[]
+  /** If set on mount, auto-select this job and immediately start analysis */
+  initialJobId?: string
+  /** Called once after initialJobId has been consumed */
+  onInitialJobConsumed?: () => void
 }
 
-export function JobOptimizer({ hasResume, resume, jobs }: JobOptimizerProps) {
+export function JobOptimizer({ hasResume, resume, jobs, initialJobId, onInitialJobConsumed }: JobOptimizerProps) {
   const [step, setStep] = useState<OptimizationStep>('select-job')
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null)
   const [analysisResult, setAnalysisResult] = useState<JobAnalysisResult | null>(null)
@@ -24,11 +28,7 @@ export function JobOptimizer({ hasResume, resume, jobs }: JobOptimizerProps) {
 
   const { analyzeJob, optimizeResume, analyzing, optimizing, error, clearError } = useOptimization()
 
-  if (!hasResume || !resume) return null
-
-  const selectedJob = jobs.find((j) => j.id === selectedJobId)
-
-  const handleJobSelect = async (jobId: string) => {
+  const handleJobSelect = useCallback(async (jobId: string) => {
     setSelectedJobId(jobId)
     clearError()
     const result = await analyzeJob(jobId)
@@ -36,7 +36,20 @@ export function JobOptimizer({ hasResume, resume, jobs }: JobOptimizerProps) {
       setAnalysisResult(result)
       setStep('select-content')
     }
-  }
+  }, [analyzeJob, clearError])
+
+  // Auto-trigger job analysis when a job id is provided via deep-link from Job Dashboard
+  useEffect(() => {
+    if (!initialJobId || !hasResume || !resume) return
+    onInitialJobConsumed?.()
+    handleJobSelect(initialJobId)
+  // handleJobSelect is stable (useCallback); initialJobId is the only real trigger
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialJobId])
+
+  if (!hasResume || !resume) return null
+
+  const selectedJob = jobs.find((j) => j.id === selectedJobId)
 
   const handleContentConfirmed = async (expIds: string[], projIds: string[]) => {
     if (!selectedJobId) return
