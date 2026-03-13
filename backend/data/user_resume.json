@@ -2,7 +2,7 @@
   "personal_info": {
     "name": "Alex Johnson",
     "phone": "(555) 123-4567",
-    "email": "alex@gmail.com",
+    "email": "alex.johnson@email.com",
     "linkedin": "linkedin.com/in/alexjohnson",
     "github": "github.com/alexjohnson"
   },
@@ -117,38 +117,7 @@
           "category": "achievement"
         }
       ],
-      "relevance_score": 0.0,
-      "overall_keywords": [
-        "1",
-        "180",
-        "180ms",
-        "1s",
-        "40",
-        "40%",
-        "50,000+",
-        "8",
-        "80%",
-        "95%",
-        "API",
-        "Architected",
-        "Developed",
-        "FastAPI",
-        "Jest",
-        "Kubernetes",
-        "Led",
-        "Optimized",
-        "Pytest",
-        "Redis",
-        "architecture",
-        "automated",
-        "cross-functional",
-        "deployment",
-        "implemented",
-        "microservices",
-        "platform",
-        "production",
-        "testing"
-      ]
+      "relevance_score": 0.0
     },
     {
       "id": "exp_002",
@@ -196,26 +165,7 @@
           "category": "achievement"
         }
       ],
-      "relevance_score": 0.0,
-      "overall_keywords": [
-        "10,000+",
-        "2",
-        "200",
-        "70",
-        "70%",
-        "99",
-        "99.9%",
-        "Built",
-        "Created",
-        "Designed",
-        "Python",
-        "data",
-        "implemented",
-        "monitoring",
-        "pipeline",
-        "real-time",
-        "sub-200ms"
-      ]
+      "relevance_score": 0.0
     },
     {
       "id": "exp_003",
@@ -253,22 +203,7 @@
           "category": "achievement"
         }
       ],
-      "relevance_score": 0.0,
-      "overall_keywords": [
-        "1",
-        "15",
-        "15%",
-        "2",
-        "45",
-        "45%",
-        "Collaborated",
-        "Developed",
-        "React",
-        "TypeScript",
-        "engagement",
-        "metrics",
-        "user"
-      ]
+      "relevance_score": 0.0
     }
   ],
   "projects": [
@@ -317,26 +252,7 @@
           "category": "technical"
         }
       ],
-      "relevance_score": 0.0,
-      "overall_keywords": [
-        "10,000+",
-        "28",
-        "28%",
-        "500",
-        "500GB",
-        "AWS",
-        "Built",
-        "Deployed",
-        "Django",
-        "Implemented",
-        "REST",
-        "React",
-        "conversion",
-        "data",
-        "full-stack",
-        "pandas",
-        "scikit-learn"
-      ]
+      "relevance_score": 0.0
     },
     {
       "id": "proj_002",
@@ -372,22 +288,7 @@
           "category": "technical"
         }
       ],
-      "relevance_score": 0.0,
-      "overall_keywords": [
-        "15",
-        "50+",
-        "Ansible",
-        "Created",
-        "Developed",
-        "Docker",
-        "Jenkins",
-        "Python",
-        "Terraform",
-        "automation",
-        "deployment",
-        "infrastructure",
-        "pipeline"
-      ]
+      "relevance_score": 0.0
     }
   ]
 }
