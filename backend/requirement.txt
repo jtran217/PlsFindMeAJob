@@ -4,4 +4,4 @@ python-multipart
 sqlalchemy
 openai
 python-dotenv
-
+jinja2

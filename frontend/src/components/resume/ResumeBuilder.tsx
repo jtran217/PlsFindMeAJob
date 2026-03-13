@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import type { Resume, Experience, Project } from '../../types/Resume'
+import type { Job } from '../../types/Job'
 import { useResume } from '../../hooks/useResume'
 import { PersonalInfoSection } from './sections/PersonalInfoSection'
 import { EducationSection } from './sections/EducationSection'
@@ -19,7 +20,14 @@ type Modal =
   | { type: 'editProject'; id: string }
   | null
 
-export function ResumeBuilder() {
+interface ResumeBuilderProps {
+  /** Jobs from the dashboard — passed down so JobOptimizer can list them */
+  jobs?: Job[]
+  /** If set, immediately open the optimizer for this job ID */
+  initialOptimizeJobId?: string
+}
+
+export function ResumeBuilder({ jobs = [], initialOptimizeJobId: _initialOptimizeJobId }: ResumeBuilderProps) {
   const { resume, loading, saving, error, loadResume, saveResume, clearError } = useResume()
 
   const [localResume, setLocalResume] = useState<Resume | null>(null)
@@ -224,7 +232,11 @@ export function ResumeBuilder() {
         />
 
         {/* ── Job Optimization Panel ───────────────────────────────────────── */}
-        <JobOptimizer hasResume={Boolean(localResume)} />
+        <JobOptimizer
+          hasResume={Boolean(localResume)}
+          resume={localResume}
+          jobs={jobs}
+        />
       </div>
 
       {/* ── Modals ───────────────────────────────────────────────────────────── */}
