@@ -1167,3 +1167,280 @@ export const useResume = () => {
 ---
 
 *This roadmap serves as a comprehensive guide for building the resume optimization system. Each phase can be implemented incrementally, allowing for testing and iteration at each step.*
+
+---
+
+# Phase 7: Periodic Job Scraper with Settings UI
+
+## Overview
+
+Allow the user to configure and schedule the job scraper (`scripts/scrap_job.py`) from the UI.
+Settings are persisted server-side in a JSON file. The APScheduler library runs inside the
+existing FastAPI process — no new infrastructure required. A "Run Now" button allows triggering
+an immediate scrape on demand.
+
+## User Requirements
+- Configure: search term, location, schedule interval, results wanted, job age filter, job sites
+- Scheduler runs inside FastAPI (APScheduler)
+- New "Settings" tab in the top nav
+- Manual "Run Now" trigger from the UI
+
+---
+
+## 7.1 Backend — Settings Storage
+
+### New file: `backend/data/scraper_settings.json`
+```json
+{
+  "search_term": "computer science",
+  "location": "Calgary",
+  "interval_hours": 24,
+  "results_wanted": 20,
+  "hours_old": 72,
+  "sites": ["indeed", "linkedin", "glassdoor", "zip_recruiter"],
+  "enabled": true
+}
+```
+
+---
+
+## 7.2 Backend — Pydantic Model
+
+### New file: `backend/app/models/scraper.py`
+```python
+from pydantic import BaseModel, Field
+from typing import List, Literal
+
+VALID_SITES = ["indeed", "linkedin", "glassdoor", "zip_recruiter"]
+
+class ScraperSettings(BaseModel):
+    search_term: str = "computer science"
+    location: str = "Calgary"
+    interval_hours: int = Field(default=24, ge=1, le=168)  # 1 hour to 1 week
+    results_wanted: int = Field(default=20, ge=1, le=100)
+    hours_old: int = Field(default=72, ge=1, le=720)
+    sites: List[Literal["indeed", "linkedin", "glassdoor", "zip_recruiter"]] = VALID_SITES
+    enabled: bool = True
+
+class ScraperStatus(BaseModel):
+    last_run: str | None        # ISO timestamp or None
+    last_run_jobs_found: int
+    last_run_jobs_added: int
+    is_running: bool
+    next_run: str | None        # ISO timestamp of next scheduled run
+    enabled: bool
+```
+
+---
+
+## 7.3 Backend — Scraper Service
+
+### New file: `backend/app/services/scraper_service.py`
+
+Extracts the `jobspy` logic from `scripts/scrap_job.py` into a reusable service.
+The original script stays intact for manual CLI use.
+
+```python
+import json
+from pathlib import Path
+from jobspy import scrape_jobs
+from sqlalchemy.orm import Session
+
+SETTINGS_PATH = Path("backend/data/scraper_settings.json")
+UNWANTED_COLUMNS = [...]  # same list as in scrap_job.py
+
+class ScraperService:
+    def load_settings(self) -> ScraperSettings:
+        """Load settings from JSON file, returning defaults if missing."""
+
+    def save_settings(self, settings: ScraperSettings) -> None:
+        """Persist settings atomically via temp file + rename."""
+
+    def run_scrape(self, db: Session) -> dict:
+        """
+        Execute a jobspy scrape using current settings.
+        Inserts new jobs into SQLite via INSERT OR IGNORE.
+        Returns: { "jobs_found": int, "jobs_added": int, "ran_at": ISO str }
+        """
+```
+
+---
+
+## 7.4 Backend — API Endpoints
+
+### Extend `backend/app/main.py`:
+
+```python
+@app.get("/api/scraper/settings")
+async def get_scraper_settings():
+    """Return current scraper settings."""
+
+@app.put("/api/scraper/settings")
+async def update_scraper_settings(settings: ScraperSettings):
+    """
+    Save new settings and reschedule the APScheduler job
+    to use the new interval_hours and enabled flag.
+    """
+
+@app.post("/api/scraper/run")
+async def run_scraper_now():
+    """Trigger an immediate scrape outside the normal schedule."""
+
+@app.get("/api/scraper/status")
+async def get_scraper_status():
+    """
+    Return last run time, jobs found/added, whether a run is
+    currently in progress, and the next scheduled run time.
+    """
+```
+
+### APScheduler wiring (startup):
+```python
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+scheduler = AsyncIOScheduler()
+
+@app.on_event("startup")
+async def start_scheduler():
+    settings = scraper_service.load_settings()
+    if settings.enabled:
+        scheduler.add_job(
+            scraper_service.run_scrape,
+            "interval",
+            hours=settings.interval_hours,
+            id="job_scraper",
+            replace_existing=True,
+        )
+    scheduler.start()
+    app.state.scheduler = scheduler
+```
+
+When `PUT /api/scraper/settings` is called, the running job is rescheduled:
+```python
+scheduler.reschedule_job("job_scraper", trigger="interval", hours=new_settings.interval_hours)
+# or remove if enabled=False
+```
+
+---
+
+## 7.5 Frontend — Types
+
+### New file: `frontend/src/types/Scraper.ts`
+```typescript
+export interface ScraperSettings {
+  search_term: string;
+  location: string;
+  interval_hours: number;
+  results_wanted: number;
+  hours_old: number;
+  sites: Array<"indeed" | "linkedin" | "glassdoor" | "zip_recruiter">;
+  enabled: boolean;
+}
+
+export interface ScraperStatus {
+  last_run: string | null;
+  last_run_jobs_found: number;
+  last_run_jobs_added: number;
+  is_running: boolean;
+  next_run: string | null;
+  enabled: boolean;
+}
+```
+
+---
+
+## 7.6 Frontend — Hook
+
+### New file: `frontend/src/hooks/useScraper.ts`
+```typescript
+export const useScraper = () => {
+  const [settings, setSettings] = useState<ScraperSettings | null>(null);
+  const [status, setStatus] = useState<ScraperStatus | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [running, setRunning] = useState(false);
+
+  const loadSettings = async () => { /* GET /api/scraper/settings */ };
+  const saveSettings = async (s: ScraperSettings) => { /* PUT /api/scraper/settings */ };
+  const runNow = async () => { /* POST /api/scraper/run, then poll status */ };
+  const pollStatus = async () => { /* GET /api/scraper/status */ };
+
+  return { settings, status, saving, running, loadSettings, saveSettings, runNow, pollStatus };
+};
+```
+
+---
+
+## 7.7 Frontend — Settings Component
+
+### New file: `frontend/src/components/settings/ScraperSettings.tsx`
+
+UI layout:
+
+```
+┌─ Job Scraper Settings ───────────────────────────────────┐
+│                                                           │
+│  Search Term      [computer science              ]        │
+│  Location         [Calgary                       ]        │
+│                                                           │
+│  Schedule         [Every 24 hours          ▼]            │
+│                   (options: 1h, 6h, 12h, 24h, 48h, 7d)  │
+│  Enabled          [ toggle ]                              │
+│                                                           │
+│  Results per run  [20  ]    Job age filter  [72 ] hours   │
+│                                                           │
+│  Job Sites        [x] Indeed  [x] LinkedIn                │
+│                   [x] Glassdoor  [x] ZipRecruiter         │
+│                                                           │
+│  ┌─ Last Run ───────────────────────────────────────┐    │
+│  │  Mar 13 2026, 9:00 PM  •  12 found  •  5 added   │    │
+│  │  Next run: Mar 14 2026, 9:00 PM                   │    │
+│  └──────────────────────────────────────────────────┘    │
+│                                                           │
+│  [Save Settings]                    [▶ Run Now]           │
+└───────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 7.8 Frontend — Navigation
+
+### Modify `frontend/src/App.tsx`:
+- Add `'settings'` to the `View` type: `'jobs' | 'resume' | 'settings'`
+- Add a third nav button: **Settings**
+- Render `<ScraperSettings />` when `currentView === 'settings'`
+
+---
+
+## 7.9 New Dependency
+
+```
+apscheduler>=3.10
+```
+
+Add to `backend/requirements.txt`.
+
+---
+
+## Phase 7 Checklist
+
+### Backend Tasks:
+- [ ] Add `apscheduler` to `requirements.txt`
+- [ ] Create `backend/data/scraper_settings.json` with defaults
+- [ ] Create `backend/app/models/scraper.py` (ScraperSettings, ScraperStatus)
+- [ ] Create `backend/app/services/scraper_service.py` (extract logic from scrap_job.py)
+- [ ] Add APScheduler startup wiring to `main.py`
+- [ ] Add `GET/PUT /api/scraper/settings` endpoints
+- [ ] Add `POST /api/scraper/run` endpoint
+- [ ] Add `GET /api/scraper/status` endpoint
+
+### Frontend Tasks:
+- [ ] Create `frontend/src/types/Scraper.ts`
+- [ ] Create `frontend/src/hooks/useScraper.ts`
+- [ ] Create `frontend/src/components/settings/ScraperSettings.tsx`
+- [ ] Add "Settings" tab to nav in `App.tsx`
+
+### Integration Tasks:
+- [ ] Verify rescheduling works when interval changes
+- [ ] Verify enable/disable toggle pauses and resumes the scheduler
+- [ ] Test "Run Now" during an already-running scrape (should be a no-op or queue)
+- [ ] Test status polling after manual run
