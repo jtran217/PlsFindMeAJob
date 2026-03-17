@@ -907,7 +907,7 @@ async def download_resume_pdf(job_id: str):
 
 ---
 
-# Phase 6: Integration & Polish (IN PROGRESS)
+# Phase 6: Integration & Polish (Done ✅)
 
 ## 6.1 Navigation Enhancement
 
@@ -1204,7 +1204,7 @@ an immediate scrape on demand.
 
 ---
 
-## 7.2 Backend — Pydantic Model
+## 7.2 Backend — Pydantic Model (Done ✅)
 
 ### New file: `backend/app/models/scraper.py`
 ```python
@@ -1233,7 +1233,7 @@ class ScraperStatus(BaseModel):
 
 ---
 
-## 7.3 Backend — Scraper Service
+## 7.3 Backend — Scraper Service (Done ✅)
 
 ### New file: `backend/app/services/scraper_service.py`
 
@@ -1266,7 +1266,7 @@ class ScraperService:
 
 ---
 
-## 7.4 Backend — API Endpoints
+## 7.4 Backend — API Endpoints (Done ✅)
 
 ### Extend `backend/app/main.py`:
 
@@ -1323,7 +1323,7 @@ scheduler.reschedule_job("job_scraper", trigger="interval", hours=new_settings.i
 
 ---
 
-## 7.5 Frontend — Types
+## 7.5 Frontend — Types (Done ✅)
 
 ### New file: `frontend/src/types/Scraper.ts`
 ```typescript
@@ -1349,7 +1349,7 @@ export interface ScraperStatus {
 
 ---
 
-## 7.6 Frontend — Hook
+## 7.6 Frontend — Hook (Done ✅)
 
 ### New file: `frontend/src/hooks/useScraper.ts`
 ```typescript
@@ -1370,7 +1370,7 @@ export const useScraper = () => {
 
 ---
 
-## 7.7 Frontend — Settings Component
+## 7.7 Frontend — Settings Component (Done ✅)
 
 ### New file: `frontend/src/components/settings/ScraperSettings.tsx`
 
@@ -1402,7 +1402,7 @@ UI layout:
 
 ---
 
-## 7.8 Frontend — Navigation
+## 7.8 Frontend — Navigation (Done ✅)
 
 ### Modify `frontend/src/App.tsx`:
 - Add `'settings'` to the `View` type: `'jobs' | 'resume' | 'settings'`
@@ -1411,7 +1411,7 @@ UI layout:
 
 ---
 
-## 7.9 New Dependency
+## 7.9 New Dependency (Done ✅)
 
 ```
 apscheduler>=3.10
@@ -1434,13 +1434,87 @@ Add to `backend/requirements.txt`.
 - [x] Add `GET /api/scraper/status` endpoint
 
 ### Frontend Tasks:
-- [ ] Create `frontend/src/types/Scraper.ts`
-- [ ] Create `frontend/src/hooks/useScraper.ts`
-- [ ] Create `frontend/src/components/settings/ScraperSettings.tsx`
-- [ ] Add "Settings" tab to nav in `App.tsx`
+- [x] Create `frontend/src/types/Scraper.ts`
+- [x] Create `frontend/src/hooks/useScraper.ts`
+- [x] Create `frontend/src/components/settings/ScraperSettings.tsx`
+- [x] Add "Settings" tab to nav in `App.tsx`
 
 ### Integration Tasks:
 - [ ] Verify rescheduling works when interval changes
 - [ ] Verify enable/disable toggle pauses and resumes the scheduler
 - [ ] Test "Run Now" during an already-running scrape (should be a no-op or queue)
 - [ ] Test status polling after manual run
+
+---
+
+# Phase 8: Job List Improvements
+
+## Overview
+
+Quality-of-life improvements to the job dashboard list: pagination, date-based ordering,
+manual job deletion, and automatic expiry of stale listings.
+
+---
+
+## 8.1 Pagination
+
+### Backend:
+- Add `page` and `page_size` query params to `GET /api/jobs`
+- Return a paginated response: `{ items, total, page, page_size, total_pages }`
+
+### Frontend:
+- Add pagination controls (Previous / Next + page number) below the job list
+- Default page size: 20 jobs per page
+
+---
+
+## 8.2 Date-Based Ordering
+
+### Backend:
+- Default `GET /api/jobs` sort order: `date_posted DESC` (most recent first)
+- Allow optional `sort` query param for future flexibility
+
+### Frontend:
+- Jobs render in most-recent-first order by default
+- No manual sort control needed for now
+
+---
+
+## 8.3 Manual Job Deletion
+
+### Backend:
+- Add `DELETE /api/jobs/{job_id}` endpoint
+- Hard-delete the row from SQLite
+
+### Frontend:
+- Add a delete button (trash icon) on each job card
+- Confirmation prompt before deletion
+- Remove job from list on success without full reload
+
+---
+
+## 8.4 Automatic Expiry of Old Jobs
+
+### Backend:
+- On each scraper run (scheduled or manual), delete jobs where `date_posted` is older than 60 days
+- Also expose `POST /api/jobs/cleanup` for on-demand purge
+
+### Frontend:
+- No UI change needed; stale jobs silently disappear after the next scrape
+
+---
+
+## Phase 8 Checklist
+
+### Backend Tasks:
+- [ ] Add `page` / `page_size` query params and paginated response to `GET /api/jobs`
+- [ ] Set default sort to `date_posted DESC`
+- [ ] Add `DELETE /api/jobs/{job_id}` endpoint
+- [ ] Auto-delete jobs older than 60 days inside `ScraperService.run_scrape()`
+- [ ] Add `POST /api/jobs/cleanup` endpoint for on-demand purge
+
+### Frontend Tasks:
+- [ ] Add pagination controls to the job list
+- [ ] Render jobs in most-recent-first order
+- [ ] Add delete button with confirmation to each job card
+- [ ] Remove deleted job from local state without full reload
