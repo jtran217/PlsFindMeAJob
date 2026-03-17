@@ -10,8 +10,9 @@ Main application entry point providing REST API endpoints for:
 
 import json
 import logging
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Any, Generator, List
+from typing import Dict, Any, Generator, List, Optional
 
 from dotenv import load_dotenv
 
@@ -25,13 +26,17 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
 from app.database import SessionLocal, engine, Base
 from app.job_models import Job
 from app.models.resume import Resume, JobAnalysisResult, OptimizedContent, OptimizedResume
+from app.models.scraper import ScraperSettings, ScraperStatus
 from app.services.resume_service import ResumeService
 from app.services.scoring_service import ScoringService
 from app.services.optimization_service import OptimizationService
 from app.services.pdf_service import PDFService
+from app.services.scraper_service import ScraperService
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -48,9 +53,8 @@ app = FastAPI(
 )
 
 # ---------------------------------------------------------------------------
-# Application startup: initialize singleton services that hold long-lived
-# resources (e.g. httpx.AsyncClient inside AsyncOpenAI). Using app.state
-# avoids creating and discarding a new client on every request.
+# Application startup: initialize singleton services and the APScheduler.
+# Two startup handlers are registered — FastAPI calls both in order.
 # ---------------------------------------------------------------------------
 
 @app.on_event("startup")
@@ -62,6 +66,101 @@ def _startup() -> None:
     except EnvironmentError as e:
         logger.error(f"OptimizationService could not be initialised: {e}")
         app.state.optimization_service = None
+
+    # Initialise the scraper service and its in-memory status store
+    app.state.scraper_service = ScraperService()
+    app.state.scraper_status = {
+        "last_run": None,
+        "last_run_jobs_found": 0,
+        "last_run_jobs_added": 0,
+        "is_running": False,
+        "next_run": None,
+    }
+    logger.info("ScraperService initialised.")
+
+
+@app.on_event("startup")
+async def _start_scheduler() -> None:
+    """Start APScheduler and register the periodic scrape job if enabled."""
+    scraper_svc: ScraperService = app.state.scraper_service
+    settings = scraper_svc.load_settings()
+
+    scheduler = AsyncIOScheduler()
+
+    if settings.enabled:
+        scheduler.add_job(
+            _scheduled_scrape,
+            trigger="interval",
+            hours=settings.interval_hours,
+            id="job_scraper",
+            replace_existing=True,
+        )
+        logger.info(
+            f"Scraper scheduled every {settings.interval_hours}h (enabled={settings.enabled})."
+        )
+        # Compute next run time after the scheduler starts (below)
+
+    scheduler.start()
+    app.state.scheduler = scheduler
+
+    # Update next_run in status after scheduler has started
+    if settings.enabled:
+        _refresh_next_run()
+
+
+async def _scheduled_scrape() -> None:
+    """Wrapper called by APScheduler; opens its own DB session."""
+    db = SessionLocal()
+    try:
+        await _do_scrape(db)
+    finally:
+        db.close()
+
+
+async def _do_scrape(db: Session) -> None:
+    """
+    Core scrape logic shared by the scheduler and the /run endpoint.
+    Guards against concurrent runs via the is_running flag.
+
+    The jobspy call is blocking (network I/O + pandas), so it is offloaded
+    to a thread-pool executor to avoid stalling the event loop.
+    """
+    import asyncio
+    status: Dict[str, Any] = app.state.scraper_status
+
+    if status["is_running"]:
+        logger.warning("Scrape requested but one is already running — skipping.")
+        return
+
+    status["is_running"] = True
+    try:
+        scraper_svc: ScraperService = app.state.scraper_service
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(None, scraper_svc.run_scrape, db)
+        status["last_run"] = result["ran_at"]
+        status["last_run_jobs_found"] = result["jobs_found"]
+        status["last_run_jobs_added"] = result["jobs_added"]
+        logger.info(
+            f"Scrape finished: {result['jobs_added']} added / {result['jobs_found']} found."
+        )
+    except Exception as e:
+        logger.error(f"Scrape failed: {e}")
+    finally:
+        status["is_running"] = False
+        _refresh_next_run()
+
+
+def _refresh_next_run() -> None:
+    """Update app.state.scraper_status['next_run'] from the scheduler."""
+    try:
+        scheduler: AsyncIOScheduler = app.state.scheduler
+        job = scheduler.get_job("job_scraper")
+        if job and job.next_run_time:
+            app.state.scraper_status["next_run"] = job.next_run_time.isoformat()
+        else:
+            app.state.scraper_status["next_run"] = None
+    except Exception:
+        app.state.scraper_status["next_run"] = None
 
 # CORS configuration
 ALLOWED_ORIGINS = [
@@ -123,6 +222,11 @@ def get_optimization_service() -> OptimizationService:
 def get_pdf_service() -> PDFService:
     """PDF generation service dependency injection."""
     return PDFService()
+
+
+def get_scraper_service() -> ScraperService:
+    """Return the singleton ScraperService from app.state."""
+    return app.state.scraper_service
 
 
 # ---------------------------------------------------------------------------
@@ -507,3 +611,106 @@ async def get_sample_resume():
     except Exception as e:
         logger.error(f"Failed to load sample resume: {e}")
         raise HTTPException(status_code=500, detail="Failed to load sample resume data")
+
+
+# ---------------------------------------------------------------------------
+# Scraper API Endpoints
+# ---------------------------------------------------------------------------
+
+@app.get("/api/scraper/settings", response_model=ScraperSettings)
+async def get_scraper_settings(
+    scraper_service: ScraperService = Depends(get_scraper_service),
+):
+    """Return current scraper settings."""
+    return scraper_service.load_settings()
+
+
+@app.put("/api/scraper/settings", response_model=ScraperSettings)
+async def update_scraper_settings(
+    settings: ScraperSettings,
+    scraper_service: ScraperService = Depends(get_scraper_service),
+):
+    """
+    Save new scraper settings and reschedule (or remove) the APScheduler job
+    to reflect the new interval_hours and enabled flag.
+    """
+    try:
+        scraper_service.save_settings(settings)
+
+        scheduler = getattr(app.state, "scheduler", None)
+        if scheduler is not None:
+            existing_job = scheduler.get_job("job_scraper")
+
+            if settings.enabled:
+                if existing_job:
+                    scheduler.reschedule_job(
+                        "job_scraper",
+                        trigger="interval",
+                        hours=settings.interval_hours,
+                    )
+                    logger.info(
+                        f"Scraper rescheduled to every {settings.interval_hours}h."
+                    )
+                else:
+                    scheduler.add_job(
+                        _scheduled_scrape,
+                        trigger="interval",
+                        hours=settings.interval_hours,
+                        id="job_scraper",
+                        replace_existing=True,
+                    )
+                    logger.info(
+                        f"Scraper job added at every {settings.interval_hours}h."
+                    )
+                _refresh_next_run()
+            else:
+                if existing_job:
+                    scheduler.remove_job("job_scraper")
+                    logger.info("Scraper job removed (disabled).")
+                app.state.scraper_status["next_run"] = None
+
+        return settings
+
+    except Exception as e:
+        logger.error(f"Failed to update scraper settings: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save scraper settings.")
+
+
+@app.post("/api/scraper/run")
+async def run_scraper_now(db: Session = Depends(get_db)):
+    """
+    Trigger an immediate scrape outside the normal schedule.
+
+    Returns 409 if a scrape is already in progress.
+    """
+    status = app.state.scraper_status
+    if status["is_running"]:
+        raise HTTPException(
+            status_code=409,
+            detail="A scrape is already in progress. Please wait for it to finish.",
+        )
+
+    import asyncio
+    asyncio.create_task(_do_scrape(db))
+
+    return {"message": "Scrape started."}
+
+
+@app.get("/api/scraper/status", response_model=ScraperStatus)
+async def get_scraper_status(
+    scraper_service: ScraperService = Depends(get_scraper_service),
+):
+    """
+    Return last run time, jobs found/added, whether a run is currently in
+    progress, the next scheduled run time, and the enabled flag.
+    """
+    raw = app.state.scraper_status
+    settings = scraper_service.load_settings()
+    return ScraperStatus(
+        last_run=raw["last_run"],
+        last_run_jobs_found=raw["last_run_jobs_found"],
+        last_run_jobs_added=raw["last_run_jobs_added"],
+        is_running=raw["is_running"],
+        next_run=raw["next_run"],
+        enabled=settings.enabled,
+    )
