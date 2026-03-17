@@ -1187,7 +1187,7 @@ an immediate scrape on demand.
 
 ---
 
-## 7.1 Backend — Settings Storage
+## 7.1 Backend — Settings Storage (Done ✅)
 
 ### New file: `backend/data/scraper_settings.json`
 ```json
@@ -1424,14 +1424,14 @@ Add to `backend/requirements.txt`.
 ## Phase 7 Checklist
 
 ### Backend Tasks:
-- [ ] Add `apscheduler` to `requirements.txt`
-- [ ] Create `backend/data/scraper_settings.json` with defaults
-- [ ] Create `backend/app/models/scraper.py` (ScraperSettings, ScraperStatus)
-- [ ] Create `backend/app/services/scraper_service.py` (extract logic from scrap_job.py)
-- [ ] Add APScheduler startup wiring to `main.py`
-- [ ] Add `GET/PUT /api/scraper/settings` endpoints
-- [ ] Add `POST /api/scraper/run` endpoint
-- [ ] Add `GET /api/scraper/status` endpoint
+- [x] Add `apscheduler` to `requirements.txt`
+- [x] Create `backend/data/scraper_settings.json` with defaults
+- [x] Create `backend/app/models/scraper.py` (ScraperSettings, ScraperStatus)
+- [x] Create `backend/app/services/scraper_service.py` (extract logic from scrap_job.py)
+- [x] Add APScheduler startup wiring to `main.py`
+- [x] Add `GET/PUT /api/scraper/settings` endpoints
+- [x] Add `POST /api/scraper/run` endpoint
+- [x] Add `GET /api/scraper/status` endpoint
 
 ### Frontend Tasks:
 - [ ] Create `frontend/src/types/Scraper.ts`

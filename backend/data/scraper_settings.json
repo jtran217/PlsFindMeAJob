@@ -1,0 +1,10 @@
+{
+  "search_term": "computer science",
+  "location": "Calgary",
+  "country": "canada",
+  "interval_hours": 24,
+  "results_wanted": 20,
+  "hours_old": 72,
+  "sites": ["indeed", "linkedin", "glassdoor", "zip_recruiter"],
+  "enabled": true
+}

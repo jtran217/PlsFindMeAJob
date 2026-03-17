@@ -5,3 +5,5 @@ sqlalchemy
 openai
 python-dotenv
 jinja2
+apscheduler>=3.10
+jobspy
