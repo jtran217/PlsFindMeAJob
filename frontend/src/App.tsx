@@ -1,18 +1,19 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useJobs } from './hooks/useJobs'
 import { formatDate } from './utils/formatDate'
 import { JobDescription } from './components/JobDescription'
 import { ResumeBuilder } from './components/resume/ResumeBuilder'
+import { ScraperSettings } from './components/settings/ScraperSettings'
 
 type Tab = 'ready' | 'applied' | 'all'
-type View = 'jobs' | 'resume'
+type View = 'jobs' | 'resume' | 'settings'
 
 function App() {
   const [currentView, setCurrentView] = useState<View>('jobs')
   const [pendingOptimizeJobId, setPendingOptimizeJobId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const { jobs, loading, error } = useJobs()
+  const { jobs, loading, error, refreshJobs } = useJobs()
 
   const counts = useMemo(() => ({
     ready: jobs.filter((job) => job.status === 'ready').length,
@@ -24,18 +25,6 @@ function App() {
     if (activeTab === 'all') return jobs
     return jobs.filter((job) => job.status === activeTab)
   }, [activeTab, jobs])
-
-  useEffect(() => {
-    if (!filteredJobs.length) {
-      setSelectedId(null)
-      return
-    }
-
-    const alreadySelected = filteredJobs.some((job) => job.id === selectedId)
-    if (!alreadySelected) {
-      setSelectedId(filteredJobs[0].id)
-    }
-  }, [filteredJobs, selectedId])
 
   const selectedJob = filteredJobs.find((job) => job.id === selectedId) ?? filteredJobs[0]
 
@@ -98,6 +87,16 @@ function App() {
               >
                 Resume Builder
               </button>
+              <button
+                onClick={() => setCurrentView('settings')}
+                className={`rounded-xl border px-4 py-2 text-sm font-medium transition ${
+                  currentView === 'settings'
+                    ? 'border-indigo-500/70 bg-indigo-500/15 text-white shadow-[0_10px_40px_rgba(79,70,229,0.3)]'
+                    : 'border-slate-800 bg-white/5 text-slate-400 hover:border-slate-600 hover:text-white'
+                }`}
+              >
+                Settings
+              </button>
             </nav>
           </div>
 
@@ -108,6 +107,8 @@ function App() {
 
         {currentView === 'resume' ? (
           <ResumeBuilder jobs={jobs} initialOptimizeJobId={pendingOptimizeJobId ?? undefined} onOptimizeJobConsumed={() => setPendingOptimizeJobId(null)} />
+        ) : currentView === 'settings' ? (
+          <ScraperSettings onScrapeComplete={refreshJobs} />
         ) : (
           <>
           <div className="mb-6 flex gap-3 overflow-x-auto pb-2">
