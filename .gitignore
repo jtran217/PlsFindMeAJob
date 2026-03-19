@@ -5,3 +5,4 @@ __pycache__/
 .env
 ./backend/data/generated_resumes/
 ./backend/data/user_resumes.json
+./backend/data/resume_versions/
