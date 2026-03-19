@@ -141,7 +141,7 @@ function App() {
                   <p className="text-sm text-slate-400">Job list</p>
                   <p className="text-base font-semibold text-white">{filteredJobs.length} matches</p>
                 </div>
-                <div className="divide-y divide-slate-800/70">
+                <div className="divide-y divide-slate-800/70 max-h-[calc(100vh-280px)] overflow-y-auto">
                   {filteredJobs.map((job) => {
                     const isSelected = job.id === selectedJob?.id
                     return (
@@ -300,7 +300,7 @@ function App() {
                       )}
                     </div>
 
-                    <div className="rounded-xl border border-slate-800/70 bg-[#0c1325]/80 p-4 text-sm leading-relaxed text-slate-200 shadow-inner shadow-indigo-950/30">
+                    <div className="rounded-xl border border-slate-800/70 bg-[#0c1325]/80 p-4 text-sm leading-relaxed text-slate-200 shadow-inner shadow-indigo-950/30 max-h-[calc(100vh-480px)] overflow-y-auto">
                       <JobDescription content={selectedJob.description || 'No description available'} />
                     </div>
 
