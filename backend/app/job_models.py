@@ -28,3 +28,4 @@ class Job(Base):
     skills = Column(Text)
     experience_range = Column(String)
     status = Column(String)
+    resume_path = Column(String)  # filename of generated PDF, e.g. "Johnny_Tran_in-xxx_1234.pdf"

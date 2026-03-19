@@ -24,6 +24,7 @@ from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -57,6 +58,17 @@ app = FastAPI(
 # Application startup: initialize singleton services and the APScheduler.
 # Two startup handlers are registered — FastAPI calls both in order.
 # ---------------------------------------------------------------------------
+
+@app.on_event("startup")
+def _migrate_db() -> None:
+    """Add new columns to existing tables if they don't exist yet."""
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE job_list ADD COLUMN resume_path TEXT"))
+            conn.commit()
+    except Exception:
+        pass  # column already exists
+
 
 @app.on_event("startup")
 def _startup() -> None:
@@ -244,29 +256,42 @@ def root() -> Dict[str, str]:
 def get_jobs(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
+    status: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
     """
     Get paginated jobs sorted by date_posted descending.
+    Optionally filter by status (ready, applied, etc.).
 
     Returns:
-        Paginated response with items, total, page, page_size, total_pages.
+        Paginated response with items, total, page, page_size, total_pages, counts.
 
     Raises:
         HTTPException: If database query fails.
     """
     try:
         query = db.query(Job).order_by(Job.date_posted.desc())
+        if status:
+            query = query.filter(Job.status == status)
         total = query.count()
         items = query.offset((page - 1) * page_size).limit(page_size).all()
         total_pages = max(1, math.ceil(total / page_size))
-        logger.info(f"Retrieved {len(items)} jobs (page {page}/{total_pages}, total={total})")
+
+        # Always return per-status counts for tab badges
+        counts = {
+            "ready": db.query(Job).filter(Job.status == "ready").count(),
+            "applied": db.query(Job).filter(Job.status == "applied").count(),
+            "all": db.query(Job).count(),
+        }
+
+        logger.info(f"Retrieved {len(items)} jobs (page {page}/{total_pages}, total={total}, status={status})")
         return {
             "items": items,
             "total": total,
             "page": page,
             "page_size": page_size,
             "total_pages": total_pages,
+            "counts": counts,
         }
     except SQLAlchemyError as e:
         logger.error(f"Database error retrieving jobs: {e}")
@@ -302,6 +327,13 @@ def delete_job(job_id: str, db: Session = Depends(get_db)):
     db.delete(job)
     db.commit()
     logger.info(f"Deleted job {job_id}")
+
+    # Clean up generated resume files
+    resume_dir = Path(__file__).parent.parent / "data" / "resume_versions"
+    for f in resume_dir.glob(f"*_{job_id}_*.pdf"):
+        f.unlink(missing_ok=True)
+    version_file = resume_dir / f"{job_id}_optimized.json"
+    version_file.unlink(missing_ok=True)
 
 
 @app.post("/api/jobs/cleanup")
@@ -455,12 +487,114 @@ async def optimize_resume_for_job(
         raise HTTPException(status_code=500, detail="Resume optimization failed. Please try again.")
 
 
+@app.post("/api/resume/auto-generate/{job_id}")
+async def auto_generate_resume(
+    job_id: str,
+    resume_service: ResumeService = Depends(get_resume_service),
+    scoring_service: ScoringService = Depends(get_scoring_service),
+    optimization_service: OptimizationService = Depends(get_optimization_service),
+    pdf_service: PDFService = Depends(get_pdf_service),
+    db: Session = Depends(get_db),
+):
+    """
+    Auto-generate a tailored PDF resume for a job in one shot.
+
+    Runs the full pipeline without any user interaction:
+    1. Analyze the job and rank resume items by relevance.
+    2. Auto-select the top 5 items (experiences + projects combined).
+    3. AI-optimize the selected bullet points.
+    4. Compile and save the PDF.
+    5. Persist the PDF filename on the job row.
+    """
+    try:
+        logger.info(f"Auto-generate requested for job {job_id}")
+
+        resume = resume_service.load_master_resume()
+
+        try:
+            job_analysis = scoring_service.extract_job_requirements(job_id)
+        except ValueError as e:
+            raise HTTPException(status_code=404, detail=str(e))
+
+        ranked_experiences, ranked_projects = scoring_service.rank_experiences_and_projects(
+            resume, job_analysis
+        )
+
+        # Auto-select top 5 items by relevance_score
+        candidates = [
+            (e.id, 'exp', e.relevance_score) for e in ranked_experiences
+        ] + [
+            (p.id, 'proj', p.relevance_score) for p in ranked_projects
+        ]
+        candidates.sort(key=lambda x: x[2], reverse=True)
+        top = candidates[:5]
+        exp_ids = [c[0] for c in top if c[1] == 'exp']
+        proj_ids = [c[0] for c in top if c[1] == 'proj']
+
+        selected_experiences = [e for e in resume.experiences if e.id in set(exp_ids)]
+        selected_projects = [p for p in resume.projects if p.id in set(proj_ids)]
+
+        optimized_content = await optimization_service.optimize_resume_items(
+            selected_experiences=selected_experiences,
+            selected_projects=selected_projects,
+            job_description=job_analysis.job_description,
+            job_title=job_analysis.job_title,
+            company=job_analysis.company,
+        )
+
+        resume_version = OptimizedResume(
+            job_id=job_id,
+            generated_at="",
+            selected_experiences=exp_ids,
+            selected_projects=proj_ids,
+            optimized_content=optimized_content,
+        )
+        resume_service.save_resume_version(job_id, resume_version)
+
+        pdf_path = pdf_service.generate_resume_pdf(
+            job_id=job_id,
+            personal_info=resume.personal_info,
+            education=resume.education,
+            technical_skills=resume.technical_skills,
+            selected_experience_ids=exp_ids,
+            selected_project_ids=proj_ids,
+            all_experiences=resume.experiences,
+            all_projects=resume.projects,
+            optimized_content=optimized_content,
+        )
+
+        job = db.query(Job).filter(Job.id == job_id).first()
+        if job:
+            job.resume_path = pdf_path.name
+            db.commit()
+
+        logger.info(f"Auto-generate complete for job {job_id}: {pdf_path.name}")
+        return {
+            "success": True,
+            "filename": pdf_path.name,
+            "download_url": f"/api/resume/download/{job_id}",
+        }
+
+    except HTTPException:
+        raise
+    except FileNotFoundError as e:
+        logger.error(f"Template missing for auto-generate: {e}")
+        raise HTTPException(status_code=500, detail="LaTeX template not found.")
+    except RuntimeError as e:
+        logger.error(f"PDF compilation failed (auto) for job {job_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"PDF compilation failed: {str(e)[:500]}")
+    except Exception as e:
+        logger.error(f"Auto-generate failed for job {job_id}: {e}")
+        raise HTTPException(status_code=500, detail="Auto-generate failed unexpectedly.")
+
+
 @app.post("/api/resume/generate-pdf/{job_id}")
 async def generate_resume_pdf(
     job_id: str,
     finalized_content: OptimizedContent,
     resume_service: ResumeService = Depends(get_resume_service),
     pdf_service: PDFService = Depends(get_pdf_service),
+    db: Session = Depends(get_db),
 ):
     """
     Generate a LaTeX PDF resume for a specific job.
@@ -506,6 +640,13 @@ async def generate_resume_pdf(
         )
 
         logger.info(f"PDF generated for job {job_id}: {pdf_path.name}")
+
+        # Persist the PDF filename on the job row
+        job = db.query(Job).filter(Job.id == job_id).first()
+        if job:
+            job.resume_path = pdf_path.name
+            db.commit()
+
         return {
             "success": True,
             "filename": pdf_path.name,

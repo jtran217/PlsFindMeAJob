@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useJobs } from './hooks/useJobs'
 import { formatDate } from './utils/formatDate'
 import { JobDescription } from './components/JobDescription'
@@ -11,20 +11,13 @@ type View = 'jobs' | 'resume' | 'settings'
 function App() {
   const [currentView, setCurrentView] = useState<View>('jobs')
   const [pendingOptimizeJobId, setPendingOptimizeJobId] = useState<string | null>(null)
+  const [autoGeneratingJobs, setAutoGeneratingJobs] = useState<Set<string>>(new Set())
+  const [autoGenerateErrors, setAutoGenerateErrors] = useState<Record<string, string>>({})
   const [activeTab, setActiveTab] = useState<Tab>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const { jobs, loading, error, page, totalPages, total, goToPage, refreshJobs, deleteJob, updateJobStatus } = useJobs()
+  const { jobs, loading, error, page, totalPages, total, counts, goToPage, refreshJobs, deleteJob, updateJobStatus } = useJobs(activeTab !== 'all' ? activeTab : undefined)
 
-  const counts = useMemo(() => ({
-    ready: jobs.filter((job) => job.status === 'ready').length,
-    applied: jobs.filter((job) => job.status === 'applied').length,
-    all: total,
-  }), [jobs, total])
-
-  const filteredJobs = useMemo(() => {
-    if (activeTab === 'all') return jobs
-    return jobs.filter((job) => job.status === activeTab)
-  }, [activeTab, jobs])
+  const filteredJobs = jobs
 
   const selectedJob = filteredJobs.find((job) => job.id === selectedId) ?? filteredJobs[0]
 
@@ -105,10 +98,14 @@ function App() {
           </div>
         </div>
 
-        {currentView === 'resume' ? (
-          <ResumeBuilder jobs={jobs} initialOptimizeJobId={pendingOptimizeJobId ?? undefined} onOptimizeJobConsumed={() => setPendingOptimizeJobId(null)} />
-        ) : currentView === 'settings' ? (
+        {currentView === 'settings' ? (
           <ScraperSettings onScrapeComplete={refreshJobs} />
+        ) : currentView === 'resume' ? (
+          <ResumeBuilder
+            jobs={jobs}
+            initialOptimizeJobId={pendingOptimizeJobId ?? undefined}
+            onOptimizeJobConsumed={() => setPendingOptimizeJobId(null)}
+          />
         ) : (
           <>
           <div className="mb-6 flex gap-3 overflow-x-auto pb-2">
@@ -117,7 +114,7 @@ function App() {
               return (
                 <button
                   key={tab.key}
-                  onClick={() => setActiveTab(tab.key as Tab)}
+                  onClick={() => { setActiveTab(tab.key as Tab); setSelectedId(null) }}
                   className={`flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition ${
                     isActive
                       ? 'border-indigo-500/70 bg-indigo-500/15 text-white shadow-[0_10px_40px_rgba(79,70,229,0.3)]'
@@ -166,6 +163,23 @@ function App() {
                             <span className="rounded-full border border-slate-700 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200">
                               {job.is_remote ? 'Remote' : (job.location || 'Location TBD')}
                             </span>
+                            {autoGeneratingJobs.has(job.id) ? (
+                              <div className="rounded p-1 opacity-0 group-hover:opacity-100">
+                                <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-indigo-400" />
+                              </div>
+                            ) : job.resume_path ? (
+                              <a
+                                href={`/api/resume/download/${job.id}`}
+                                download
+                                onClick={(e) => e.stopPropagation()}
+                                className="rounded p-1 text-slate-600 opacity-0 transition hover:text-indigo-400 group-hover:opacity-100"
+                                title="Download resume"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                              </a>
+                            ) : null}
                             <button
                               onClick={(e) => {
                                 e.stopPropagation()
@@ -227,12 +241,48 @@ function App() {
                         <h2 className="mt-2 text-2xl font-semibold text-white">{selectedJob.title}</h2>
                         <p className="text-sm text-slate-400">{selectedJob.company}</p>
                       </div>
-                      <button
-                        onClick={async () => { if (selectedJob) { await updateJobStatus(selectedJob.id, 'ready'); setPendingOptimizeJobId(selectedJob.id); setCurrentView('resume') } }}
-                        className="flex items-center gap-2 rounded-full bg-linear-to-r from-indigo-500 via-purple-500 to-fuchsia-500 px-5 py-2 text-sm font-semibold text-white shadow-[0_15px_45px_-10px_rgba(79,70,229,0.5)] transition hover:shadow-[0_20px_55px_-12px_rgba(79,70,229,0.65)]"
-                      >
-                        Generate Resume
-                      </button>
+                      <div className="flex flex-col items-end gap-1">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={async () => { if (selectedJob) { await updateJobStatus(selectedJob.id, 'ready'); setPendingOptimizeJobId(selectedJob.id); setCurrentView('resume') } }}
+                            className="rounded-full border border-indigo-500/50 bg-indigo-500/10 px-4 py-2 text-sm font-semibold text-indigo-300 transition hover:border-indigo-500/80 hover:text-white"
+                          >
+                            Precise
+                          </button>
+                          <button
+                            disabled={selectedJob ? autoGeneratingJobs.has(selectedJob.id) : false}
+                            onClick={async () => {
+                              if (!selectedJob) return
+                              const jobId = selectedJob.id
+                              setAutoGenerateErrors((prev) => { const n = { ...prev }; delete n[jobId]; return n })
+                              setAutoGeneratingJobs((prev) => new Set(prev).add(jobId))
+                              await updateJobStatus(jobId, 'ready')
+                              try {
+                                const res = await fetch(`/api/resume/auto-generate/${jobId}`, { method: 'POST' })
+                                if (!res.ok) {
+                                  const data = await res.json().catch(() => ({}))
+                                  setAutoGenerateErrors((prev) => ({ ...prev, [jobId]: data.detail ?? 'Auto-generate failed' }))
+                                } else {
+                                  await refreshJobs()
+                                }
+                              } finally {
+                                setAutoGeneratingJobs((prev) => { const n = new Set(prev); n.delete(jobId); return n })
+                              }
+                            }}
+                            className="flex items-center gap-2 rounded-full bg-linear-to-r from-indigo-500 via-purple-500 to-fuchsia-500 px-5 py-2 text-sm font-semibold text-white shadow-[0_15px_45px_-10px_rgba(79,70,229,0.5)] transition hover:shadow-[0_20px_55px_-12px_rgba(79,70,229,0.65)] disabled:opacity-60 disabled:cursor-not-allowed"
+                          >
+                            {selectedJob && autoGeneratingJobs.has(selectedJob.id) ? (
+                              <>
+                                <div className="h-3.5 w-3.5 animate-spin rounded-full border-b-2 border-white" />
+                                Generating...
+                              </>
+                            ) : 'Auto Generate'}
+                          </button>
+                        </div>
+                        {selectedJob && autoGenerateErrors[selectedJob.id] && (
+                          <p className="text-xs text-red-400">{autoGenerateErrors[selectedJob.id]}</p>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex flex-wrap gap-3 text-sm text-slate-300">

@@ -9,32 +9,36 @@ interface PaginatedJobsResponse {
   page: number
   page_size: number
   total_pages: number
+  counts: { ready: number; applied: number; all: number }
 }
 
-export function useJobs() {
+export function useJobs(statusFilter?: string) {
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const [totalPages, setTotalPages] = useState(1)
+  const [counts, setCounts] = useState({ ready: 0, applied: 0, all: 0 })
 
   const fetchJobs = useCallback(async (p: number) => {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch(`/api/jobs?page=${p}&page_size=${PAGE_SIZE}`)
+      const url = `/api/jobs?page=${p}&page_size=${PAGE_SIZE}${statusFilter ? `&status=${statusFilter}` : ''}`
+      const response = await fetch(url)
       if (!response.ok) throw new Error(`Failed to fetch jobs: ${response.status}`)
       const data: PaginatedJobsResponse = await response.json()
       setJobs(data.items)
       setTotal(data.total)
       setTotalPages(data.total_pages)
+      setCounts(data.counts)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error occurred')
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [statusFilter])
 
   const refreshJobs = useCallback(() => {
     setPage(1)
@@ -67,9 +71,11 @@ export function useJobs() {
     setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status } : j))
   }, [])
 
+  // Reset to page 1 and refetch whenever the filter changes
   useEffect(() => {
+    setPage(1)
     fetchJobs(1)
   }, [fetchJobs])
 
-  return { jobs, loading, error, page, totalPages, total, goToPage, refreshJobs, deleteJob, updateJobStatus }
+  return { jobs, loading, error, page, totalPages, total, counts, goToPage, refreshJobs, deleteJob, updateJobStatus }
 }

@@ -15,4 +15,5 @@ export interface Job {
   skills: string | null
   experience_range: string | null
   status: string
+  resume_path: string | null
 }
