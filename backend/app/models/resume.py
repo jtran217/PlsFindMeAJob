@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import List, Dict, TYPE_CHECKING
 from uuid import uuid4
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, Field, model_validator
 
 if TYPE_CHECKING:
     from app.services.keyword_extraction import KeywordExtractor
@@ -55,12 +55,10 @@ class TechnicalSkills(BaseModel):
 class BulletPoint(BaseModel):
     """
     Individual bullet point with automatic keyword extraction.
-    
+
     Keywords and category are automatically extracted from the text
     when the bullet point is created or when text is updated.
     """
-    model_config = ConfigDict(validate_assignment=True)
-
     id: str = Field(default_factory=lambda: str(uuid4()))
     text: str
     keywords: List[str] = Field(default_factory=list)
