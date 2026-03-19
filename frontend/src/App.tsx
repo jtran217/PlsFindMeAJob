@@ -13,13 +13,13 @@ function App() {
   const [pendingOptimizeJobId, setPendingOptimizeJobId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const { jobs, loading, error, refreshJobs } = useJobs()
+  const { jobs, loading, error, page, totalPages, total, goToPage, refreshJobs, deleteJob } = useJobs()
 
   const counts = useMemo(() => ({
     ready: jobs.filter((job) => job.status === 'ready').length,
     applied: jobs.filter((job) => job.status === 'applied').length,
-    all: jobs.length,
-  }), [jobs])
+    all: total,
+  }), [jobs, total])
 
   const filteredJobs = useMemo(() => {
     if (activeTab === 'all') return jobs
@@ -101,7 +101,7 @@ function App() {
           </div>
 
           <div className="rounded-full border border-slate-800 bg-white/5 px-4 py-2 text-sm text-slate-300 shadow-sm shadow-indigo-950/40">
-            {counts.all} total roles
+            {total} total roles
           </div>
         </div>
 
@@ -151,7 +151,7 @@ function App() {
                       <button
                         key={job.id}
                         onClick={() => setSelectedId(job.id)}
-                        className={`flex w-full flex-col items-start gap-2 px-5 py-4 text-left transition ${
+                        className={`group flex w-full flex-col items-start gap-2 px-5 py-4 text-left transition ${
                           isSelected
                             ? 'bg-indigo-500/10 shadow-inner shadow-indigo-900/60'
                             : 'hover:bg-white/10'
@@ -162,9 +162,26 @@ function App() {
                             <p className="text-sm uppercase tracking-[0.2em] text-slate-500">{job.site}</p>
                             <p className="mt-1 text-sm text-slate-400">{job.company}</p>
                           </div>
-                          <span className="rounded-full border border-slate-700 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200">
-                            {job.is_remote ? 'Remote' : (job.location || 'Location TBD')}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="rounded-full border border-slate-700 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200">
+                              {job.is_remote ? 'Remote' : (job.location || 'Location TBD')}
+                            </span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (window.confirm(`Delete "${job.title} at ${job.company}"?`)) {
+                                  if (selectedId === job.id) setSelectedId(null)
+                                  deleteJob(job.id)
+                                }
+                              }}
+                              className="rounded p-1 text-slate-600 opacity-0 transition hover:text-red-400 group-hover:opacity-100"
+                              title="Delete job"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
                         </div>
                         <p className="text-base font-semibold text-white">{job.title}</p>
                         <div className="flex w-full items-center justify-between text-xs text-slate-500">
@@ -175,6 +192,28 @@ function App() {
                     )
                   })}
                 </div>
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between border-t border-slate-800/70 px-5 py-3">
+                    <span className="text-xs text-slate-500">{total} total</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => goToPage(page - 1)}
+                        disabled={page === 1}
+                        className="rounded-lg border border-slate-700 bg-white/5 px-3 py-1 text-xs text-slate-300 transition hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-30"
+                      >
+                        ← Prev
+                      </button>
+                      <span className="text-xs text-slate-400">{page} / {totalPages}</span>
+                      <button
+                        onClick={() => goToPage(page + 1)}
+                        disabled={page === totalPages}
+                        className="rounded-lg border border-slate-700 bg-white/5 px-3 py-1 text-xs text-slate-300 transition hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-30"
+                      >
+                        Next →
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
 

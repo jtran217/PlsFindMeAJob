@@ -1,24 +1,34 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { Job } from '../types/Job'
 
+const PAGE_SIZE = 20
+
+interface PaginatedJobsResponse {
+  items: Job[]
+  total: number
+  page: number
+  page_size: number
+  total_pages: number
+}
+
 export function useJobs() {
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
 
-  const refreshJobs = useCallback(async () => {
+  const fetchJobs = useCallback(async (p: number) => {
     setLoading(true)
     setError(null)
-
     try {
-      const response = await fetch('/api/jobs')
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch jobs: ${response.status}`)
-      }
-
-      const data = await response.json()
-      setJobs(data)
+      const response = await fetch(`/api/jobs?page=${p}&page_size=${PAGE_SIZE}`)
+      if (!response.ok) throw new Error(`Failed to fetch jobs: ${response.status}`)
+      const data: PaginatedJobsResponse = await response.json()
+      setJobs(data.items)
+      setTotal(data.total)
+      setTotalPages(data.total_pages)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error occurred')
     } finally {
@@ -26,9 +36,30 @@ export function useJobs() {
     }
   }, [])
 
-  useEffect(() => {
-    refreshJobs()
-  }, [refreshJobs])
+  const refreshJobs = useCallback(() => {
+    setPage(1)
+    fetchJobs(1)
+  }, [fetchJobs])
 
-  return { jobs, loading, error, refreshJobs }
+  const goToPage = useCallback((p: number) => {
+    setPage(p)
+    fetchJobs(p)
+  }, [fetchJobs])
+
+  const deleteJob = useCallback(async (jobId: string) => {
+    const response = await fetch(`/api/jobs/${jobId}`, { method: 'DELETE' })
+    if (!response.ok) throw new Error(`Failed to delete job: ${response.status}`)
+    setJobs(prev => prev.filter(j => j.id !== jobId))
+    setTotal(prev => {
+      const newTotal = prev - 1
+      setTotalPages(Math.ceil(newTotal / PAGE_SIZE) || 1)
+      return newTotal
+    })
+  }, [])
+
+  useEffect(() => {
+    fetchJobs(1)
+  }, [fetchJobs])
+
+  return { jobs, loading, error, page, totalPages, total, goToPage, refreshJobs, deleteJob }
 }

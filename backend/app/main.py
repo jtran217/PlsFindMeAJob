@@ -10,7 +10,8 @@ Main application entry point providing REST API endpoints for:
 
 import json
 import logging
-from datetime import datetime, timezone
+import math
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Dict, Any, Generator, List, Optional
 
@@ -19,7 +20,7 @@ from dotenv import load_dotenv
 # Load environment variables from project root .env before any service imports
 load_dotenv(dotenv_path=Path(__file__).parent.parent.parent.parent / ".env")
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -240,26 +241,60 @@ def root() -> Dict[str, str]:
 
 
 @app.get("/api/jobs")
-def get_jobs(db: Session = Depends(get_db)):
+def get_jobs(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
     """
-    Get all available jobs.
+    Get paginated jobs sorted by date_posted descending.
 
     Returns:
-        List of all jobs from database.
+        Paginated response with items, total, page, page_size, total_pages.
 
     Raises:
         HTTPException: If database query fails.
     """
     try:
-        jobs = db.query(Job).all()
-        logger.info(f"Retrieved {len(jobs)} jobs")
-        return jobs
+        query = db.query(Job).order_by(Job.date_posted.desc())
+        total = query.count()
+        items = query.offset((page - 1) * page_size).limit(page_size).all()
+        total_pages = max(1, math.ceil(total / page_size))
+        logger.info(f"Retrieved {len(items)} jobs (page {page}/{total_pages}, total={total})")
+        return {
+            "items": items,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": total_pages,
+        }
     except SQLAlchemyError as e:
         logger.error(f"Database error retrieving jobs: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve jobs from database")
     except Exception as e:
         logger.error(f"Unexpected error retrieving jobs: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@app.delete("/api/jobs/{job_id}", status_code=204)
+def delete_job(job_id: str, db: Session = Depends(get_db)):
+    """Hard-delete a single job by ID."""
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+    db.delete(job)
+    db.commit()
+    logger.info(f"Deleted job {job_id}")
+
+
+@app.post("/api/jobs/cleanup")
+def cleanup_old_jobs(db: Session = Depends(get_db)):
+    """Delete all jobs with date_posted older than 60 days."""
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=60)).strftime("%Y-%m-%d")
+    deleted = db.query(Job).filter(Job.date_posted < cutoff).delete()
+    db.commit()
+    logger.info(f"Cleanup deleted {deleted} jobs older than {cutoff}")
+    return {"deleted": deleted}
 
 
 # ---------------------------------------------------------------------------

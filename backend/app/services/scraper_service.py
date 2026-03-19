@@ -10,7 +10,7 @@ import json
 import logging
 import os
 import tempfile
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Dict, Any
 
@@ -144,6 +144,13 @@ class ScraperService:
 
         settings = self.load_settings()
         ran_at = datetime.now(timezone.utc).isoformat()
+
+        # Auto-expire jobs older than 60 days before inserting new ones
+        cutoff = (datetime.now(timezone.utc) - timedelta(days=60)).strftime("%Y-%m-%d")
+        expired = db.execute(text("DELETE FROM job_list WHERE date_posted < :cutoff"), {"cutoff": cutoff})
+        db.commit()
+        if expired.rowcount:
+            logger.info(f"Auto-expired {expired.rowcount} jobs older than {cutoff}.")
 
         logger.info(
             f"Starting scrape — term='{settings.search_term}' "
