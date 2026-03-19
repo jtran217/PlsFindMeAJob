@@ -1507,17 +1507,17 @@ manual job deletion, and automatic expiry of stale listings.
 ## Phase 8 Checklist
 
 ### Backend Tasks:
-- [ ] Add `page` / `page_size` query params and paginated response to `GET /api/jobs`
-- [ ] Set default sort to `date_posted DESC`
-- [ ] Add `DELETE /api/jobs/{job_id}` endpoint
-- [ ] Auto-delete jobs older than 60 days inside `ScraperService.run_scrape()`
-- [ ] Add `POST /api/jobs/cleanup` endpoint for on-demand purge
+- [x] Add `page` / `page_size` query params and paginated response to `GET /api/jobs`
+- [x] Set default sort to `date_posted DESC`
+- [x] Add `DELETE /api/jobs/{job_id}` endpoint
+- [x] Auto-delete jobs older than 60 days inside `ScraperService.run_scrape()`
+- [x] Add `POST /api/jobs/cleanup` endpoint for on-demand purge
 
 ### Frontend Tasks:
-- [ ] Add pagination controls to the job list
-- [ ] Render jobs in most-recent-first order
-- [ ] Add delete button with confirmation to each job card
-- [ ] Remove deleted job from local state without full reload
+- [x] Add pagination controls to the job list
+- [x] Render jobs in most-recent-first order
+- [x] Add delete button with confirmation to each job card
+- [x] Remove deleted job from local state without full reload
 
 ---
 
