@@ -3,6 +3,7 @@
 data/jobs.db
 __pycache__/
 .env
+backend/data/resume_versions/
 backend/data/generated_resumes/
 backend/data/user_resume.json
 backend/data/resume_versions/
