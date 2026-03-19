@@ -276,6 +276,23 @@ def get_jobs(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
+class JobStatusUpdate(BaseModel):
+    status: str
+
+
+@app.patch("/api/jobs/{job_id}/status")
+def update_job_status(job_id: str, body: JobStatusUpdate, db: Session = Depends(get_db)):
+    """Update the status of a single job."""
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+    job.status = body.status
+    db.commit()
+    db.refresh(job)
+    logger.info(f"Updated job {job_id} status to {body.status}")
+    return job
+
+
 @app.delete("/api/jobs/{job_id}", status_code=204)
 def delete_job(job_id: str, db: Session = Depends(get_db)):
     """Hard-delete a single job by ID."""

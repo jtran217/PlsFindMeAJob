@@ -1518,3 +1518,18 @@ manual job deletion, and automatic expiry of stale listings.
 - [ ] Render jobs in most-recent-first order
 - [ ] Add delete button with confirmation to each job card
 - [ ] Remove deleted job from local state without full reload
+
+---
+
+## Phase 9: Job Status Integration with Resume Generation
+
+### Goal
+When the user clicks "Generate Resume" on a job, the job is immediately marked as `ready` in the database. This makes the "Ready" tab a meaningful tracker of jobs you've prepared a resume for.
+
+### Backend Tasks:
+- [x] Add `PATCH /api/jobs/{job_id}/status` endpoint accepting `{ "status": "ready" | "applied" | "all" }`
+- [x] Update the `status` column on the job row in SQLite and return the updated job
+
+### Frontend Tasks:
+- [x] Add `updateJobStatus(jobId, status)` to `useJobs` hook — calls PATCH endpoint and updates local state
+- [x] In "Generate Resume" click handler: call `updateJobStatus(job.id, 'ready')` before navigating to resume view

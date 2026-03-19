@@ -13,7 +13,7 @@ function App() {
   const [pendingOptimizeJobId, setPendingOptimizeJobId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const { jobs, loading, error, page, totalPages, total, goToPage, refreshJobs, deleteJob } = useJobs()
+  const { jobs, loading, error, page, totalPages, total, goToPage, refreshJobs, deleteJob, updateJobStatus } = useJobs()
 
   const counts = useMemo(() => ({
     ready: jobs.filter((job) => job.status === 'ready').length,
@@ -228,7 +228,7 @@ function App() {
                         <p className="text-sm text-slate-400">{selectedJob.company}</p>
                       </div>
                       <button
-                        onClick={() => { setPendingOptimizeJobId(selectedJob?.id ?? null); setCurrentView('resume') }}
+                        onClick={async () => { if (selectedJob) { await updateJobStatus(selectedJob.id, 'ready'); setPendingOptimizeJobId(selectedJob.id); setCurrentView('resume') } }}
                         className="flex items-center gap-2 rounded-full bg-linear-to-r from-indigo-500 via-purple-500 to-fuchsia-500 px-5 py-2 text-sm font-semibold text-white shadow-[0_15px_45px_-10px_rgba(79,70,229,0.5)] transition hover:shadow-[0_20px_55px_-12px_rgba(79,70,229,0.65)]"
                       >
                         Generate Resume

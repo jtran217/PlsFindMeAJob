@@ -57,9 +57,19 @@ export function useJobs() {
     })
   }, [])
 
+  const updateJobStatus = useCallback(async (jobId: string, status: string) => {
+    const response = await fetch(`/api/jobs/${jobId}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    })
+    if (!response.ok) throw new Error(`Failed to update job status: ${response.status}`)
+    setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status } : j))
+  }, [])
+
   useEffect(() => {
     fetchJobs(1)
   }, [fetchJobs])
 
-  return { jobs, loading, error, page, totalPages, total, goToPage, refreshJobs, deleteJob }
+  return { jobs, loading, error, page, totalPages, total, goToPage, refreshJobs, deleteJob, updateJobStatus }
 }
