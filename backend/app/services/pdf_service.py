@@ -60,6 +60,16 @@ def latex_escape(text: str) -> str:
     return _LATEX_ESCAPE_RE.sub(lambda m: _LATEX_SPECIAL[m.group()], str(text))
 
 
+def normalize_url(url: str) -> str:
+    """Ensure a URL has an https:// scheme so \\href creates an absolute link."""
+    if not url:
+        return ''
+    url = url.strip()
+    if not url.startswith(('http://', 'https://')):
+        url = 'https://' + url
+    return url
+
+
 # ---------------------------------------------------------------------------
 # PDF Service
 # ---------------------------------------------------------------------------
@@ -95,6 +105,7 @@ class PDFService:
             lstrip_blocks=True,
         )
         self.jinja_env.filters['latex_escape'] = latex_escape
+        self.jinja_env.filters['normalize_url'] = normalize_url
 
     def generate_resume_pdf(
         self,

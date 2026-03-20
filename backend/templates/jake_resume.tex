@@ -95,10 +95,10 @@
     \small << personal_info.phone | latex_escape >> $|$
     \href{mailto:<< personal_info.email >>}{\underline{<< personal_info.email | latex_escape >>}} $|$
     <@ if personal_info.linkedin @>
-    \href{<< personal_info.linkedin >>}{\underline{<< personal_info.linkedin | latex_escape >>}} $|$
+    \href{<< personal_info.linkedin | normalize_url >>}{\underline{<< personal_info.linkedin | latex_escape >>}} $|$
     <@ endif @>
     <@ if personal_info.github @>
-    \href{<< personal_info.github >>}{\underline{<< personal_info.github | latex_escape >>}}
+    \href{<< personal_info.github | normalize_url >>}{\underline{<< personal_info.github | latex_escape >>}}
     <@ endif @>
 \end{center}
 
