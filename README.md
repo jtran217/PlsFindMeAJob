@@ -107,35 +107,6 @@ cp .env.example .env
 - Manual generation with reviewed content
 - PDFs stored per job for later download
 
-## Roadmap
-
-### Phase 1 — Foundation ✅
-- [x] Scrape job postings
-- [x] Normalize and store job data
-- [x] CLI / script-based workflow
-
-### Phase 2 — Visibility ✅
-- [x] FastAPI backend
-- [x] React frontend talking to backend
-- [x] Markdown rendering for job descriptions
-- [x] Scrollable job list and description panel
-- [ ] Pagination UI
-- [ ] Filtering and search
-
-### Phase 3 — Resume Generation ✅
-- [x] Resume builder with structured sections
-- [x] AI-powered bullet point optimization
-- [x] PDF export via LaTeX
-
-### Phase 4 — Incremental Intelligence 🔄
-- [ ] Keyword matching and scoring UI
-- [ ] Heuristic-based job relevance score
-- [ ] Resume–job fit indicators
-
-### Phase 5 — Nice-to-Haves
-- [x] Dockerization
-- [ ] Multiple job boards
-- [ ] ML-based ranking experiments
 
 ## Project Structure
 
