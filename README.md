@@ -35,7 +35,7 @@ cp .env.example .env
 # Edit .env and fill in OPENROUTER_API_KEY
 
 # 3. Start everything
-docker compose up --build
+docker compose up --build -d
 ```
 
 | Service | URL |
