@@ -180,6 +180,18 @@ function App() {
                                 </svg>
                               </a>
                             ) : null}
+                            {job.status === 'ready' && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  updateJobStatus(job.id, 'applied')
+                                }}
+                                className="rounded px-2 py-1 text-xs font-medium text-slate-400 opacity-0 transition hover:bg-green-500/10 hover:text-green-400 group-hover:opacity-100"
+                                title="Mark as applied"
+                              >
+                                Applied
+                              </button>
+                            )}
                             <button
                               onClick={(e) => {
                                 e.stopPropagation()
