@@ -11,6 +11,7 @@ Main application entry point providing REST API endpoints for:
 import json
 import logging
 import math
+import os
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Dict, Any, Generator, List, Optional
@@ -176,10 +177,8 @@ def _refresh_next_run() -> None:
         app.state.scraper_status["next_run"] = None
 
 # CORS configuration
-ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:5175",
-]
+_default_origins = "http://localhost:5173,http://localhost:5175"
+ALLOWED_ORIGINS = os.environ.get("ALLOWED_ORIGINS", _default_origins).split(",")
 
 app.add_middleware(
     CORSMiddleware,

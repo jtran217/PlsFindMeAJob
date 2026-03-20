@@ -3,8 +3,8 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATABASE_PATH = os.path.join(BASE_DIR, "jobs.db")
-DATABASE_URL = f"sqlite:///{DATABASE_PATH}"
+_default_db_path = os.path.join(BASE_DIR, "jobs.db")
+DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{_default_db_path}")
 
 engine = create_engine(
     DATABASE_URL,connect_args={"check_same_thread":False}
