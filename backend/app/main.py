@@ -869,7 +869,7 @@ async def update_scraper_settings(
 
 
 @app.post("/api/scraper/run")
-async def run_scraper_now(db: Session = Depends(get_db)):
+async def run_scraper_now():
     """
     Trigger an immediate scrape outside the normal schedule.
 
@@ -883,7 +883,7 @@ async def run_scraper_now(db: Session = Depends(get_db)):
         )
 
     import asyncio
-    asyncio.create_task(_do_scrape(db))
+    asyncio.create_task(_scheduled_scrape())
 
     return {"message": "Scrape started."}
 
