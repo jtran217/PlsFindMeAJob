@@ -1,4 +1,4 @@
-# PlsFindMeAJob
+# HireMe
 
 > Scrape job postings, build a tailored resume, and generate a PDF — all from a single dashboard.
 > Designed to be self-hosted: spin it up locally with Docker and keep your data on your own machine.
@@ -28,7 +28,7 @@
 ```bash
 # 1. Clone and enter the repo
 git clone <repo-url>
-cd PlsFindMeAJob
+cd HireMe
 
 # 2. Set up environment
 cp .env.example .env
@@ -111,7 +111,7 @@ cp .env.example .env
 ## Project Structure
 
 ```
-PlsFindMeAJob/
+HireMe/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py                 # FastAPI entry point

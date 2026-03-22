@@ -1,5 +1,5 @@
 """
-PlsFindMeAJob FastAPI Application.
+HireMe FastAPI Application.
 
 Main application entry point providing REST API endpoints for:
 - Job management (existing functionality)
@@ -50,7 +50,7 @@ Base.metadata.create_all(bind=engine)
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="PlsFindMeAJob API",
+    title="HireMe API",
     description="Job application management and resume optimization platform",
     version="1.0.0"
 )
@@ -248,7 +248,7 @@ def get_scraper_service() -> ScraperService:
 @app.get("/")
 def root() -> Dict[str, str]:
     """Root endpoint — API health check."""
-    return {"message": "PlsFindMeAJob API is running"}
+    return {"message": "HireMe API is running"}
 
 
 @app.get("/api/jobs")

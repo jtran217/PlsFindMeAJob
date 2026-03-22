@@ -4,7 +4,7 @@ Tests the scoring algorithm accuracy with expected rankings
 """
 
 import sys
-sys.path.append('/home/johnnytran/Projects/PlsFindMeAJob/backend')
+sys.path.append('/home/johnnytran/Projects/HireMe/backend')
 
 from app.models.resume import *
 from app.services.scoring_service import ScoringService

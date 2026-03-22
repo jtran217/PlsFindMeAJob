@@ -924,7 +924,7 @@ const App = () => {
           <div className="flex items-center gap-8">
             <div>
               <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Dashboard</p>
-              <h1 className="mt-2 text-3xl font-semibold text-white">PlsFindMeAJob</h1>
+              <h1 className="mt-2 text-3xl font-semibold text-white">HireMe</h1>
             </div>
             
             {/* Navigation Tabs */}
