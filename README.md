@@ -1,6 +1,6 @@
 # HireMe
 
-> Scrape job postings, build a tailored resume, and generate a PDF — all from a single dashboard.
+> Scrape job postings, build a tailored resume, and generate a PDF, all from a single dashboard.
 > Designed to be self-hosted: spin it up locally with Docker and keep your data on your own machine.
 
 ## What It Does
