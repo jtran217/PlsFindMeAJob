@@ -15,7 +15,8 @@ function App() {
   const [autoGenerateErrors, setAutoGenerateErrors] = useState<Record<string, string>>({})
   const [activeTab, setActiveTab] = useState<Tab>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const { jobs, loading, error, page, totalPages, total, counts, goToPage, refreshJobs, deleteJob, updateJobStatus } = useJobs(activeTab !== 'all' ? activeTab : undefined)
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false)
+  const { jobs, loading, error, page, totalPages, total, counts, goToPage, refreshJobs, deleteJob, deleteAllJobs, updateJobStatus } = useJobs(activeTab !== 'all' ? activeTab : undefined)
 
   const filteredJobs = jobs
 
@@ -137,9 +138,40 @@ function App() {
           <div className="grid gap-6 lg:grid-cols-12">
             <section className="lg:col-span-5">
               <div className="overflow-hidden rounded-2xl border border-slate-800/80 bg-white/5 shadow-[0_30px_80px_-60px_rgba(0,0,0,0.65)]">
-                <div className="border-b border-slate-800/70 bg-white/5 px-5 py-4">
-                  <p className="text-sm text-slate-400">Job list</p>
-                  <p className="text-base font-semibold text-white">{filteredJobs.length} matches</p>
+                <div className="border-b border-slate-800/70 bg-white/5 px-5 py-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-slate-400">Job list</p>
+                    <p className="text-base font-semibold text-white">{filteredJobs.length} matches</p>
+                  </div>
+                  {confirmDeleteAll ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-400">Are you sure?</span>
+                      <button
+                        onClick={() => {
+                          setConfirmDeleteAll(false)
+                          setSelectedId(null)
+                          deleteAllJobs()
+                        }}
+                        className="rounded-lg border border-red-500/70 bg-red-500/15 px-3 py-1.5 text-xs font-medium text-red-300 transition hover:bg-red-500/25"
+                      >
+                        Yes, delete all
+                      </button>
+                      <button
+                        onClick={() => setConfirmDeleteAll(false)}
+                        className="rounded-lg border border-slate-700 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-400 transition hover:text-white"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmDeleteAll(true)}
+                      className="rounded-lg border border-red-900/50 bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-400 transition hover:border-red-500/70 hover:text-red-300"
+                      title="Delete all jobs"
+                    >
+                      Delete All
+                    </button>
+                  )}
                 </div>
                 <div className="divide-y divide-slate-800/70 max-h-[calc(100vh-280px)] overflow-y-auto">
                   {filteredJobs.map((job) => {

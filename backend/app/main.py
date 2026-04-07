@@ -335,6 +335,20 @@ def delete_job(job_id: str, db: Session = Depends(get_db)):
     version_file.unlink(missing_ok=True)
 
 
+@app.delete("/api/jobs", status_code=204)
+def delete_all_jobs(db: Session = Depends(get_db)):
+    """Hard-delete all jobs."""
+    deleted = db.query(Job).delete()
+    db.commit()
+    logger.info(f"Deleted all {deleted} jobs")
+
+    resume_dir = Path(__file__).parent.parent / "data" / "resume_versions"
+    if resume_dir.exists():
+        for f in resume_dir.iterdir():
+            if f.is_file():
+                f.unlink(missing_ok=True)
+
+
 @app.post("/api/jobs/cleanup")
 def cleanup_old_jobs(db: Session = Depends(get_db)):
     """Delete all jobs with date_posted older than 60 days."""

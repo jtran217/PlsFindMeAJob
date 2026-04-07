@@ -61,6 +61,15 @@ export function useJobs(statusFilter?: string) {
     })
   }, [])
 
+  const deleteAllJobs = useCallback(async () => {
+    const response = await fetch('/api/jobs', { method: 'DELETE' })
+    if (!response.ok) throw new Error(`Failed to delete all jobs: ${response.status}`)
+    setJobs([])
+    setTotal(0)
+    setTotalPages(1)
+    setCounts({ ready: 0, applied: 0, all: 0 })
+  }, [])
+
   const updateJobStatus = useCallback(async (jobId: string, status: string) => {
     const response = await fetch(`/api/jobs/${jobId}/status`, {
       method: 'PATCH',
@@ -77,5 +86,5 @@ export function useJobs(statusFilter?: string) {
     fetchJobs(1)
   }, [fetchJobs])
 
-  return { jobs, loading, error, page, totalPages, total, counts, goToPage, refreshJobs, deleteJob, updateJobStatus }
+  return { jobs, loading, error, page, totalPages, total, counts, goToPage, refreshJobs, deleteJob, deleteAllJobs, updateJobStatus }
 }
